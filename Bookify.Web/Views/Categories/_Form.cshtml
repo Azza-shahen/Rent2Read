@@ -1,0 +1,37 @@
+﻿@model CategoryFormViewModel
+
+@* 
+    This Ajax form is used to submit data asynchronously without reloading the entire page.
+    - Benefits of using Ajax:
+       - Prevents full page reload, providing a smoother user experience.
+       - Allows us to handle success or error responses dynamically (e.g., show a message without redirect).
+       - Improves performance in interactive applications.
+       - fast, dynamic form submission without leaving the current page.
+ *@
+
+<form  asp-action="@(Model?.Id > 0 ? "Edit" : "Create")"
+       data-ajax-method="post"
+       data-ajax="true"
+       data-ajax-begin="onModalBegin"
+       data-ajax-success="onModalSuccess"
+       data-ajax-failure="showErrorMessage"
+       data-ajax-complete="onModalComplete">@*It is executed after the request is completed,whether it succeeds or fails. *@
+    @if (Model?.Id > 0)
+    {
+        <input type="hidden" asp-for="Id" />
+    }
+    <div class="mb-5">
+        <div class="form-floating mb-2">
+            <input type="text" class="form-control" asp-for="Name" placeholder="Name">
+            <label asp-for="Name"></label>
+        </div>
+        <span asp-validation-for="Name" class="text-danger"></span>
+
+    </div>
+
+        <partial name="_ModalFooter" />
+</form>
+
+
+
+

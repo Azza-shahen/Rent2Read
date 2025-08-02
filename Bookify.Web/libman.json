@@ -29,6 +29,22 @@
         "font/bootstrap-icons.css",
         "font/bootstrap-icons.min.css"
       ]
+    },
+    {
+      "library": "bootbox.js@6.0.4",
+      "destination": "wwwroot/lib/bootbox.js/"
+    },
+    {
+      "library": "animate.css@4.1.1",
+      "destination": "wwwroot/lib/animate.css/",
+      "files": [
+        "animate.min.css",
+        "animate.css"
+      ]
+    },
+    {
+      "library": "jquery-ajax-unobtrusive@3.2.6",
+      "destination": "wwwroot/lib/jquery-ajax-unobtrusive/"
     }
   ]
 }

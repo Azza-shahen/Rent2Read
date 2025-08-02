@@ -1,6 +1,6 @@
-using Bookify.Web.Data;
+using Bookify.Web.Core.Mapping;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +13,10 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+//builder.Services.AddAutoMapper(typeof(MappingProfile));//Registers only from the given type and nearby classes. Limited scope.
+builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
+//Scans the entire assembly for all classes inheriting from Profile. Broader and safer.
 
 var app = builder.Build();
 
