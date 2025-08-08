@@ -45,7 +45,7 @@ function onModalBegin() {
         datatable.row.add(newRow).draw();
 
         KTMenu.init();
-        KTMenu.initHandlers();
+      KTMenu.initHandlers()
 }
 
 function onModalComplete() {
@@ -160,6 +160,23 @@ var KTDatatables = function () {
 }();
 
 $(function () {
+    //TinyMCE
+    var options = { selector: ".js-tinymce", height: "435" };
+
+    if (KTThemeMode.getMode() === "dark") {
+        options["skin"] = "oxide-dark";
+        options["content_css"] = "dark";
+    }
+    tinymce.init(options);
+    //select2
+    $('.js-select2').select2();
+    //Datepicker
+    $('.js-datepicker').daterangepicker({
+        singleDatePicker: true,
+        autoApply: true,
+        drops: 'up',
+        maxDate:new Date()
+    });
     //Sweet Alert
     var message = $('#Message').text().trim();
     if (message !== '') {

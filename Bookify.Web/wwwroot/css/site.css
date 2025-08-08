@@ -21,6 +21,11 @@ body {
   margin-bottom: 60px;
 }
 
+/*Start override Theme*/
+.form-floating >.form-select{
+    padding-bottom : 0.225rem;
+}
+/*End override Theme*/
 .invalid-feedback {
     display: block;
 }

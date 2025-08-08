@@ -8,7 +8,7 @@ namespace Bookify.Web.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<BookCategory>().HasKey(e=>new {e.BookId,e.CategoryId});//Composite Key
+            builder.Entity<BookCategory>().HasKey(e => new { e.BookId, e.CategoryId });//Composite Key
             base.OnModelCreating(builder);
         }
         public DbSet<Author> Authors { get; set; }

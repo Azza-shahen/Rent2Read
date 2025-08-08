@@ -1,4 +1,4 @@
-﻿  
+﻿
 namespace Bookify.Web.Controllers
 {
     public class CategoriesController : Controller

@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using static System.Reflection.Metadata.BlobBuilder;
-
-namespace Bookify.Web.Core.Models
+﻿namespace Bookify.Web.Core.Models
 {
     public class BookCategory
     {

@@ -1,6 +1,8 @@
 using Bookify.Web.Core.Mapping;
+
 using Microsoft.AspNetCore.Identity;
 using System.Reflection;
+using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+// Register the ExpressiveAnnotations library for advanced model validation using expressions (e.g., [RequiredIf], [AssertThat])
+builder.Services.AddExpressiveAnnotations();
+
+//Configuration Binding of CloudinarySettings class with data in appsettings.json file 
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 //builder.Services.AddAutoMapper(typeof(MappingProfile));//Registers only from the given type and nearby classes. Limited scope.
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));

@@ -1,4 +1,6 @@
-﻿namespace Bookify.Web.Core.Mapping
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace Bookify.Web.Core.Mapping
 {
     public class MappingProfile : Profile
     {
@@ -6,13 +8,24 @@
        It allows you to group related mappings in one place*/
         public MappingProfile()
         {
-            //Catgory
+            //Categories
             CreateMap<Category, CategoryViewModel>().ReverseMap();
             CreateMap<CategoryFormViewModel, Category>().ReverseMap();
-            //Author
+            CreateMap<Category, SelectListItem>()
+                .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Id));
+
+            //Authors
             CreateMap<Author, AuthorViewModel>().ReverseMap();
             CreateMap<AuthorFormViewModel, Author>().ReverseMap();
+            CreateMap<Author, SelectListItem>()
+               .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.Name))
+               .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Id));
 
+            //Books
+            CreateMap<BookFormViewModel, Book>()
+                .ReverseMap()
+                .ForMember(dest => dest.Categories, opt => opt.Ignore());
 
         }
 
