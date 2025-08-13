@@ -48,8 +48,11 @@ function onModalBegin() {
       KTMenu.initHandlers()
 }
 
-function onModalComplete() {
+function disableSubmitButton() {
     $(this).find('button[type="submit"]').prop('disabled', false).removeAttr('data-kt-indicator');
+}
+function onModalComplete() {
+    disableSubmitButton();
 }
 //Data Tables
 /*  uses jQuery with the DataTables library to make any HTML table interactive.
@@ -160,23 +163,62 @@ var KTDatatables = function () {
 }();
 
 $(function () {
-    //TinyMCE
-    var options = { selector: ".js-tinymce", height: "435" };
 
-    if (KTThemeMode.getMode() === "dark") {
-        options["skin"] = "oxide-dark";
-        options["content_css"] = "dark";
+    //Disable submit button
+    $('form').on('submit', function () {
+        if ($('.js-tinymce').length > 0) {
+            $('.js-tinymce').each(function () {
+                var input = $(this);
+                var content = tinyMCE.get(input.atrr('id')).getContent();
+                input.val(content);
+            });
+        }
+        var isValid = $(this).valid();
+        if (isValid) disableSubmitButton();
+    });
+    //TinyMCE
+    // Initialize TinyMCE rich text editor for elements with class ".js-tinymce"
+    if ($('.js-tinymce').length >0)
+    {
+        var options = { selector: ".js-tinymce", height: "447" };
+
+        if (KTThemeMode.getMode() === "dark") {
+            options["skin"] = "oxide-dark";
+            options["content_css"] = "dark";
+        }
+        tinymce.init(options);
     }
-    tinymce.init(options);
     //select2
     $('.js-select2').select2();
+    $('.js-select2').on('select2:select', function (e) {
+        var select = $(this);
+        $('form').validate().element('#'+select.attr('id'));
+    });
+    //Datepicker
+
+   /* $('.js-datepicker').daterangepicker({
+        singleDatePicker: true,
+        autoApply: true,
+        drops: 'up',
+       *//* maxDate: new Date(),*//*
+        maxDate: moment().endOf('day'),
+      *//*  locale: {
+            format: 'YYYY-MM-DD'
+        }
+       *//*
+    });*/
     //Datepicker
     $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
         drops: 'up',
-        maxDate:new Date()
+        maxDate: moment().endOf('day'),
+        locale: {
+            format: 'DD/MM/YYYY'
+        }
     });
+
+
     //Sweet Alert
     var message = $('#Message').text().trim();
     if (message !== '') {
