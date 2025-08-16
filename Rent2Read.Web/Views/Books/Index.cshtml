@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Books";
+}
+
+@section Styles {
+
+    <link href="~/assets/plugins/datatables/datatables.bundle.css" rel="stylesheet" />
+
+}
+<div class="alert bg-light-primary border border-primary border-3 border-dashed d-flex justify-content-between w-100 p-5 mb-10">
+    <div class="d-flex align-items-center">
+        <div class="symbol symbol-40px me-4">
+            <div class="symbol-label fs-2 fw-semibold text-success">
+                <!--begin::Svg Icon | path: icons/duotune/general/gen002.svg-->
+                <span class="svg-icon svg-icon-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-book-half" viewBox="0 0 16 16">
+                        <path d="M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783" />
+                    </svg>
+                </span>
+                <!--end::Svg Icon-->
+            </div>
+        </div>
+        <!--begin::Content-->
+        <div class="d-flex flex-column pe-0 pe-sm-10">
+            <h5 class="mb-1">Books</h5>
+        </div>
+        <!--end::Content-->
+    </div>
+    <div>
+        <a class="btn btn-sm btn-primary" asp-action="Create">
+            <i class="bi bi-plus-square-dotted"></i>
+            Add
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header align-items-center py-5 gap-2 gap-md-5">
+        <div class="card-title">
+            <div class="d-flex align-items-center position-relative my-1">
+                <span class="svg-icon svg-icon-1 position-absolute ms-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="currentColor"></rect>
+                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="currentColor"></path>
+                    </svg>
+                </span>
+                <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-14" placeholder="Search by title or author..." />
+            </div>
+           
+        </div>
+
+    </div>
+
+
+    <div class="card-body pt-0">
+        <div class="table-responsive">
+            <table id="Books" class="table table-row-dashed table-row-gray-300 gy-3 align-middle">
+                <thead>
+                    <tr class="fw-bold fs-6 text-gray-800">
+                        <th class="d-none"></th>
+                        <th>Book</th>
+                        @*       <th>Publisher</th>
+                        <th>Publishing Date</th>
+                        <th>Hall</th>
+                        <th>Categories</th>
+                        <th>Rental</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th> *@
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Plugins {
+    <script src="~/assets/plugins/datatables/datatables.bundle.js"></script>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+                    $('[data-kt-filter="search"]').on('keyup', function () {
+            var input = $(this);
+            datatable.search(this.value).draw();
+        });
+
+            datatable = $('#Books').DataTable({
+                        serverSide: true,//It means that all paging, searching and sorting will be done on the server, not on the client.
+                        processing: true,
+                         stateSave: true,
+                          language: {
+            processing: '<div class="d-flex justify-content-center text-primary align-items-center dt-spinner"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><span class="text-muted ps-2">Loading...</span></div>'
+        },
+                         ajax: {
+                    url: '/Books/GetBooks',
+                    type: 'POST'
+                },
+                order: [[1, 'asc']] ,//here it is sorted according to the second column in ascending order
+                columnDefs: [{//Controls showing/hiding/searching columns.
+                 targets: [0],
+                 visible: false,
+                 searchable: false
+             }],
+             columns: [
+                 { "data": "id", "name": "Id", "className": "d-none" },//data =>must be camel Case
+                 // DataTables requires property names in camelCase (e.g., "id", "title") to match JSON keys correctly.
+                 { "data": "title", "name": "Title"}
+             ]
+           });
+                });
+    </script>
+}
