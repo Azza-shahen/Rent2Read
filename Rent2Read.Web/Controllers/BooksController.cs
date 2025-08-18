@@ -90,6 +90,7 @@ namespace Rent2Read.Web.Controllers
         {
             var book = _dbContext.Books
                 .Include(b=>b.Author)
+                .Include(b=>b.Copies)
                 .Include(b=>b.Categories)
                 .ThenInclude(c=>c.Category)
                 .SingleOrDefault(b=>b.Id ==id);

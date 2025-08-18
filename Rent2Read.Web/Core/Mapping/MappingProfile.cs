@@ -31,6 +31,11 @@ namespace Rent2Read.Web.Core.Mapping
                  .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author!.Name))
                  .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.Categories.Select(c => c.Category!.Name).ToList()));
 
+            CreateMap<BookCopy, BookCopyViewModel>()
+                 .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book!.Title));
+
+            CreateMap<BookCopy, BookCopyFormViewModel>();
+
         }
 
     }

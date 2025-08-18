@@ -25,6 +25,7 @@
         // Navigation Properties
         public Author? Author { get; set; }
         public ICollection<BookCategory> Categories { get; set; } = new HashSet<BookCategory>();
+        public ICollection<BookCopy> Copies { get; set; } = new HashSet<BookCopy>();
 
     }
 }
