@@ -46,7 +46,7 @@
                 </span>
                 <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-14" placeholder="Search by title or author..." />
             </div>
-           
+
         </div>
 
     </div>
@@ -59,13 +59,14 @@
                     <tr class="fw-bold fs-6 text-gray-800">
                         <th class="d-none"></th>
                         <th>Book</th>
-                        @*       <th>Publisher</th>
+                        <th>Publisher</th>
                         <th>Publishing Date</th>
                         <th>Hall</th>
                         <th>Categories</th>
                         <th>Rental</th>
                         <th>Status</th>
-                        <th class="text-end">Action</th> *@
+                        <th class="text-end">Action</th>
+
                     </tr>
                 </thead>
                 <tbody>
@@ -79,36 +80,15 @@
 }
 
 @section Scripts {
-    <script>
-        $(document).ready(function () {
-                    $('[data-kt-filter="search"]').on('keyup', function () {
-            var input = $(this);
-            datatable.search(this.value).draw();
-        });
-
-            datatable = $('#Books').DataTable({
-                        serverSide: true,//It means that all paging, searching and sorting will be done on the server, not on the client.
-                        processing: true,
-                         stateSave: true,
-                          language: {
-            processing: '<div class="d-flex justify-content-center text-primary align-items-center dt-spinner"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><span class="text-muted ps-2">Loading...</span></div>'
-        },
-                         ajax: {
-                    url: '/Books/GetBooks',
-                    type: 'POST'
-                },
-                order: [[1, 'asc']] ,//here it is sorted according to the second column in ascending order
-                columnDefs: [{//Controls showing/hiding/searching columns.
-                 targets: [0],
-                 visible: false,
-                 searchable: false
-             }],
-             columns: [
-                 { "data": "id", "name": "Id", "className": "d-none" },//data =>must be camel Case
-                 // DataTables requires property names in camelCase (e.g., "id", "title") to match JSON keys correctly.
-                 { "data": "title", "name": "Title"}
-             ]
-           });
-                });
-    </script>
+    
+        <script src="~/js/books.js" asp-append-version="true"></script>
+    
 }
+
+
+@Html.AntiForgeryToken()
+@* Security as I used of Anti-Forgery Token. *@
+@* This enters a hidden input into the HTML containing a security token value (CSRF Token). 
+    When we send a POST request, we must send it with this token so that the server can verify that
+    the request is coming from the same view and not from an external site.
+ *@

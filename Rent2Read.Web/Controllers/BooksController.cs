@@ -58,7 +58,10 @@ namespace Rent2Read.Web.Controllers
             var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
             var sortColumnDirection = Request.Form["order[0][dir]"]; // asc or desc
 
-            IQueryable<Book> books = _dbContext.Books.Include(b=>b.Author);
+            IQueryable<Book> books = _dbContext.Books
+                .Include(b=>b.Author)
+                .Include(b => b.Categories)
+                .ThenInclude(c => c.Category);
 
             if (!string.IsNullOrEmpty(searchValue))
             {
@@ -69,12 +72,13 @@ namespace Rent2Read.Web.Controllers
             books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
 
             var data = books.Skip(start).Take(length).ToList();// Returns the required part of the data Only.
+            var mappedDate=_mapper.Map<IEnumerable< BookViewModel>>(data);
             var recordsTotal = books.Count(); // Total number of books
             var jsonData = new
             {
                 recordsFiltered = recordsTotal,
                 recordsTotal = recordsTotal,
-                data = data
+                data = mappedDate
             };
 
             return Ok(jsonData);
@@ -306,7 +310,27 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-     
+        #region ToggleStatus
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ToggleStatus(int id)
+        {
+
+            var book = _dbContext.Books.Find(id);
+            if (book is null)
+            {
+                return NotFound();
+            }
+
+       
+            book.IsDeleted = !book.IsDeleted;
+            book.LastUpdatedOn = DateTime.Now;
+            _dbContext.SaveChanges();
+            return Ok();
+        
+        }
+
+        #endregion
 
         #region AllowItem
         public IActionResult AllowItem(BookFormViewModel model)
