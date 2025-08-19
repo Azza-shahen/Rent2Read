@@ -1,6 +1,6 @@
+﻿using Microsoft.AspNetCore.Identity;
 using Rent2Read.Web.Core.Mapping;
-
-using Microsoft.AspNetCore.Identity;
+using Rent2Read.Web.Seeds;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 
@@ -12,8 +12,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+/*builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();*/
+
+builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+   //RequireConfirmedAccount = true → users must confirm their email before signing in
+    .AddEntityFrameworkStores<ApplicationDbContext>()//store user/role data in the database
+    .AddDefaultUI()// use the default Identity UI pages (Login, Register, ForgotPassword, etc.)
+    .AddDefaultTokenProviders();//enable token generation for email confirmation, password reset, etc.
+
+
+
 builder.Services.AddControllersWithViews();
 
 // Register the ExpressiveAnnotations library for advanced model validation using expressions (e.g., [RequiredIf], [AssertThat])
@@ -45,7 +54,20 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+
+//This code usually runs at application startup to guarantee that the system has the roles and admin user required to work correctly.
+var scopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+//creates a temporary scope so we can access scoped services (like RoleManager) outside of normal request handling.
+using var scope = scopeFactory.CreateScope();
+
+var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+await DefaultRoles.SeedRolesAsync(roleManager);
+await DefaultUsers.SeedAdminUserAsync(userManager);
 
 app.MapControllerRoute(
     name: "default",
