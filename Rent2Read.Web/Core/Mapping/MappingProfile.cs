@@ -36,6 +36,10 @@ namespace Rent2Read.Web.Core.Mapping
 
             CreateMap<BookCopy, BookCopyFormViewModel>();
 
+
+            //Users
+            CreateMap<ApplicationUser, UserViewModel>();
+
         }
 
     }
