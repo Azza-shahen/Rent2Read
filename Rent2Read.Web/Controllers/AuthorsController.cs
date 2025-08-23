@@ -1,5 +1,9 @@
-﻿namespace Rent2Read.Web.Controllers
+﻿using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+
+namespace Rent2Read.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class AuthorsController(ApplicationDbContext _dbContext, IMapper _mapper) : Controller
     {
         #region Index
@@ -13,7 +17,7 @@
 
         #endregion
         #region Create
-
+        [HttpGet]
         [AjaxOnly]
         public IActionResult Create()
         {
@@ -27,6 +31,7 @@
             if (ModelState.IsValid)
             {
                 var author = _mapper.Map<Author>(model);
+                author.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
                 _dbContext.Authors.Add(author);
                 _dbContext.SaveChanges();
                 var authorVM = _mapper.Map<AuthorViewModel>(author);
@@ -60,6 +65,7 @@
                     return NotFound();
                 }
                 var name = _mapper.Map(model, author);
+                author.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
                 author.LastUpdatedOn = DateTime.Now;
                 _dbContext.SaveChanges();
 
@@ -82,6 +88,8 @@
             }
 
             author.IsDeleted = !author.IsDeleted;
+            author.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             author.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok(author.LastUpdatedOn.ToString());

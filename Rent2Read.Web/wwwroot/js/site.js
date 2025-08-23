@@ -15,15 +15,15 @@ function showSuccessMessage(message = 'Saved successfully!') {
         }
     });
 }
-function showErrorMessage(message = '') {
+function showErrorMessage(message = 'Something went wrong!') {
     Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Something went wrong!",
+        icon: 'error',
+        title: 'Oops...',
+        text: message.responseText !== undefined ? message.responseText : message,
         customClass: {
             confirmButton: "btn btn-primary"
         }
-    })
+    });
 }
 
 function onModalBegin() {
@@ -54,6 +54,17 @@ function disableSubmitButton() {
 function onModalComplete() {
     disableSubmitButton();
 }
+
+//Select2
+function applySelect2() {
+    $('.js-select2').select2();
+    $('.js-select2').on('select2:select', function (e) {
+        var select = $(this);
+        $('form').not('#SignOut').validate().element('#' + select.attr('id'));
+    });
+}
+
+
 //Data Tables
 /*  uses jQuery with the DataTables library to make any HTML table interactive.
            It adds features like:
@@ -192,22 +203,18 @@ $(function () {
         tinymce.init(options);
     }
     //select2
-    $('.js-select2').select2();
-    $('.js-select2').on('select2:select', function (e) {
-        var select = $(this);
-        $('form').validate().element('#'+select.attr('id'));
-    });
+    applySelect2();
     //Datepicker
 
-   /* $('.js-datepicker').daterangepicker({
+/*    $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
         drops: 'up',
-       *//* maxDate: new Date(),*//*
+      maxDate: new Date()
     
         }
-       *//*
-    });*/
+     
+    );*/
     //Datepicker
     $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
@@ -248,6 +255,7 @@ $(function () {
             , success: function (form) {
                 modal.find('.modal-body').html(form);
                 $.validator.unobtrusive.parse(modal);
+                applySelect2();
             },
             error: function () {
                 showErrorMessage();
@@ -303,6 +311,44 @@ Available and Deleted without reloading the page(AJAX). */
             }
         });
     });
+
+
+    //Handle Confirm
+    $('body').delegate('.js-confirm', 'click', function () {
+        var btn = $(this);
+
+        bootbox.confirm({
+            message: btn.data('message'),
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-secondary'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    $.post({
+                        url: btn.data('url'),
+                        data: {
+                            '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function () {
+                            showSuccessMessage();
+                        },
+                        error: function () {
+                            showErrorMessage();
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+
     //Hanlde signout
     $('.js-signout').on('click', function () {
         $('#SignOut').submit();

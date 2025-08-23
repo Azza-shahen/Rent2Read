@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace Rent2Read.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class BookCopiesController (ApplicationDbContext _dbContext, IMapper _mapper): Controller
     {
 
@@ -39,7 +39,9 @@ namespace Rent2Read.Web.Controllers
             BookCopy copy = new()
             {
                 EditionNumber = model.EditionNumber,
-                IsAvailableForRental = book.IsAvailableForRental && model.IsAvailableForRental
+                IsAvailableForRental = book.IsAvailableForRental && model.IsAvailableForRental,
+                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+
             };
 
             book.Copies.Add(copy);
@@ -84,6 +86,8 @@ namespace Rent2Read.Web.Controllers
 
             copy.EditionNumber = model.EditionNumber;
             copy.IsAvailableForRental = copy.Book!.IsAvailableForRental && model.IsAvailableForRental;
+            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             copy.LastUpdatedOn = DateTime.Now;
 
             _dbContext.SaveChanges();
@@ -109,6 +113,8 @@ namespace Rent2Read.Web.Controllers
 
 
             copy.IsDeleted = !copy.IsDeleted;
+            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
             copy.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok();

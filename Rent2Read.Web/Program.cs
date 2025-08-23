@@ -1,10 +1,12 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Rent2Read.Web.Core.Mapping;
+using Rent2Read.Web.Data;
+using Rent2Read.Web.Helpers;
 using Rent2Read.Web.Seeds;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using Rent2Read.Web.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,27 @@ builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options => options.Si
     .AddDefaultUI()// use the default Identity UI pages (Login, Register, ForgotPassword, etc.)
     .AddDefaultTokenProviders();//enable token generation for email confirmation, password reset, etc.
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    /*// Default Password settings.
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 1;*/
+    options.Password.RequiredLength = 8;
+  /*  options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+    options.Lockout.MaxFailedAccessAttempts = 1;*/
+    // Default User settings.
+    /*  options.User.AllowedUserNameCharacters =
+              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";*/
+    options.User.RequireUniqueEmail = false;
+});
+
+//It registers the ApplicationUserClaims.. n the Dependency Injection Container
+//so that ASP.NET Core Identity will use the Custom Factory I created instead of using the Default UserClaimsPrincipalFactory.
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
 
 
 builder.Services.AddControllersWithViews();

@@ -22,7 +22,7 @@ namespace Rent2Read.Web.Core.ViewModels
         
         
         [Display(Name = "Publishing Date")]
-        [AssertThat("PublishingDate <= Today()", ErrorMessage = Errors.NotAllowFutureDates)]
+        //[AssertThat("PublishingDate <= Today()", ErrorMessage = Errors.NotAllowFutureDates)]
         //Ensure that the PublishingDate is not in the future (must be less than or equal to today's date)
 
         public DateTime PublishingDate { get; set; } = DateTime.Now;

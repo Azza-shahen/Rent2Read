@@ -1,5 +1,6 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 using SixLabors.ImageSharp;
@@ -9,6 +10,7 @@ using System.Linq.Dynamic.Core;
 
 namespace Rent2Read.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class BooksController(ApplicationDbContext _dbContext, IMapper _mapper
                                         , IWebHostEnvironment _webHostEnvironment
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
@@ -85,7 +87,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-            #region Details
+        #region Details
         public IActionResult Details(int id)
         {
             var book = _dbContext.Books
@@ -165,6 +167,7 @@ namespace Rent2Read.Web.Controllers
                        book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl);
                        book.ImagePublicId = result.PublicId;*/
                 }
+                book.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
                 foreach (var category in model.SelectedCategories)
                 {
@@ -205,7 +208,10 @@ namespace Rent2Read.Web.Controllers
             if (ModelState.IsValid)
             {
                
-                var book = _dbContext.Books.Include(b => b.Categories).FirstOrDefault(b => b.Id == model.Id);
+                var book = _dbContext.Books
+                    .Include(b => b.Categories)
+                    .Include(b => b.Copies)
+                    .FirstOrDefault(b => b.Id == model.Id);
                 if (book == null)
                 {
                     return NotFound();
@@ -291,6 +297,7 @@ namespace Rent2Read.Web.Controllers
 
             
                 book=_mapper.Map(model,book);
+                book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
                 book.LastUpdatedOn= DateTime.Now;
 
                /* book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl!);*/
@@ -302,6 +309,13 @@ namespace Rent2Read.Web.Controllers
                   This ensures the many-to-many relationship is saved properly in the join table.
                   */
                     book.Categories.Add(new BookCategory { CategoryId = category });
+                }
+                if (!book.IsAvailableForRental)
+                {
+                    foreach (var copy in book.Copies)
+                    {
+                      copy.IsAvailableForRental = false;
+                    }
                 }
                 _dbContext.SaveChanges();
                 return RedirectToAction(nameof(Details), new { id = book.Id });
@@ -325,6 +339,7 @@ namespace Rent2Read.Web.Controllers
 
        
             book.IsDeleted = !book.IsDeleted;
+            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             book.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok();

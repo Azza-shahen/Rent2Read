@@ -1,6 +1,10 @@
 ﻿
+using Microsoft.AspNetCore.Authorization;
+using Rent2Read.Web.Core.Models;
+
 namespace Rent2Read.Web.Controllers
 {
+    [Authorize(Roles = AppRoles.Archive)]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _dbContext;
@@ -57,8 +61,11 @@ namespace Rent2Read.Web.Controllers
             if (ModelState.IsValid)//Server Side Validation
             {
                 var category = _mapper.Map<Category>(model);
+               category.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
                 _dbContext/*.Categories*/.Add(category);
                 _dbContext.SaveChanges();
+
 
                 var categoryVM = _mapper.Map<CategoryViewModel>(category);
 
@@ -96,6 +103,7 @@ namespace Rent2Read.Web.Controllers
                 }
                 //category.Name = model.Name;
                 category = _mapper.Map(model, category);
+                category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
                 category.LastUpdatedOn = DateTime.Now;
                 _dbContext.SaveChanges();
 
@@ -131,6 +139,7 @@ namespace Rent2Read.Web.Controllers
             */
 
             category.IsDeleted = !category.IsDeleted;
+            category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             category.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok(category.LastUpdatedOn.ToString());
