@@ -5,8 +5,10 @@ using Rent2Read.Web.Core.Mapping;
 using Rent2Read.Web.Data;
 using Rent2Read.Web.Helpers;
 using Rent2Read.Web.Seeds;
+
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+
+
 /*builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();*/
 
@@ -25,6 +29,15 @@ builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options => options.Si
     .AddEntityFrameworkStores<ApplicationDbContext>()//store user/role data in the database
     .AddDefaultUI()// use the default Identity UI pages (Login, Register, ForgotPassword, etc.)
     .AddDefaultTokenProviders();//enable token generation for email confirmation, password reset, etc.
+
+//The SecurityStampValidator is responsible for periodically verifying that the user's current SecurityStamp
+//(stored in a cookie or token) is still valid and matches the SecurityStamp in the database.
+//When the Validator detects a discrepancy it:Signs out the user.Forces it to log in again.
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+   options.ValidationInterval = TimeSpan.Zero);
+//The ValidationInterval specifies the period of time that the Identity will wait before re-verifying the SecurityStamp.
+//TimeSpan.Zero:Verified on every request.This means that any changes made to the user (such as lockout or password reset) will be applied immediately, without waiting.
+
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -47,7 +60,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 //It registers the ApplicationUserClaims.. n the Dependency Injection Container
 //so that ASP.NET Core Identity will use the Custom Factory I created instead of using the Default UserClaimsPrincipalFactory.
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
-
+builder.Services.AddTransient<IImageService, ImageService>();   
 
 builder.Services.AddControllersWithViews();
 

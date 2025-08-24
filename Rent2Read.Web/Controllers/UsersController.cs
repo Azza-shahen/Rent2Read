@@ -126,6 +126,8 @@ namespace Rent2Read.Web.Controllers
                     await _userManager.AddToRolesAsync(user, model.SelectedRoles);
                 }
 
+                await _userManager.UpdateSecurityStampAsync(user);//forces the user to change the Security Stamp.
+
                 var viewModel = _mapper.Map<UserViewModel>(user);
                 return PartialView("_UserRow", viewModel);
             }
@@ -207,6 +209,10 @@ namespace Rent2Read.Web.Controllers
             user.LastUpdatedOn = DateTime.Now;
 
             await _userManager.UpdateAsync(user);
+            if (user.IsDeleted)
+            {
+               await  _userManager.UpdateSecurityStampAsync(user);//forces the user to change the Security Stamp.
+            }
 
             return Ok(user.LastUpdatedOn.ToString());
         }

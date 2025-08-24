@@ -13,18 +13,20 @@ namespace Rent2Read.Web.Controllers
     [Authorize(Roles = AppRoles.Archive)]
     public class BooksController(ApplicationDbContext _dbContext, IMapper _mapper
                                         , IWebHostEnvironment _webHostEnvironment
+                                        ,IImageService _imageService
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
-    { /* IWebHostEnvironment => -Checking environment(IsDevelopment)
+    { /* IWebHostEnvironment => - to know the location of wwwroot and store images there.
+                                -Checking environment(IsDevelopment)
                                 - Accessing WebRootPath or ContentRootPath
                                 -Managing file uploads or static files    */
 
-  /*      private readonly Cloudinary _cloudinary = new Cloudinary(
-         new Account(
-             cloudinary.Value.Cloud,
-             cloudinary.Value.ApiKey,
-             cloudinary.Value.ApiSecret
-         )
-     );*/
+        /*      private readonly Cloudinary _cloudinary = new Cloudinary(
+               new Account(
+                   cloudinary.Value.Cloud,
+                   cloudinary.Value.ApiKey,
+                   cloudinary.Value.ApiSecret
+               )
+           );*/
 
 
         //private =>encapsulation
@@ -123,36 +125,20 @@ namespace Rent2Read.Web.Controllers
 
                 if (model.Image is not null)
                 {
-                    var extension = Path.GetExtension(model.Image.FileName);
-
-                    if (!_allowedExtensions.Contains(extension))
+                    var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}";//To make sure that the image name will never be repeated
+                    var result = await _imageService.UploadAsync(model.Image, imageName, "/images/books", true);
+                    //var (isUploaded, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, "/images/books", true);
+                    if (result.isUploaded)
                     {
-                        ModelState.AddModelError(nameof(model.Image), Errors.NotAllowedExtension);
-                        return View("Form", PopulateViewModel(model));
+                        book.ImageUrl = $"/images/books/{imageName}";
+                        book.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
                     }
-
-                    if (model.Image.Length > _maxAllowedSize)
+                    else
                     {
-                        ModelState.AddModelError(nameof(model.Image), Errors.MaxSize);
-                        return View("Form", PopulateViewModel(model));
+                        ModelState.AddModelError(nameof(Image),result.errorMessage!);
+                        return View("Form",PopulateViewModel(model));
                     }
-
-                    var imageName = $"{Guid.NewGuid()}{extension}";//To make sure that the image name will never be repeated
-                    var path = Path.Combine($"{_webHostEnvironment.WebRootPath}/images/books", imageName);
-                    //put image in wwwroot/images/books.
-                    var thumbPath = Path.Combine($"{_webHostEnvironment.WebRootPath}/images/books/thumb", imageName);
                     
-                    using var stream = System.IO.File.Create(path);
-                    //This creates a new empty file in the this path (prepare place for the image to be stored on the server).
-                    await model.Image.CopyToAsync(stream);
-                    stream.Dispose(); 
-                    book.ImageUrl = $"/images/books/{imageName}";
-                    book.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
-                    using var image =Image.Load( model.Image.OpenReadStream());
-                    var ratio=(float)image.Width / 200;
-                    var height = image.Height / ratio;
-                    image.Mutate(i=>i.Resize(width:200, height:(int)height));
-                    image.Save(thumbPath);
 
                     /*   using var stream = model.Image.OpenReadStream();
                        // Open a read-only Stream of the uploaded file (IFormFile) to use it for operations such as uploading or processing without saving the file to the server
@@ -209,7 +195,7 @@ namespace Rent2Read.Web.Controllers
             {
                
                 var book = _dbContext.Books
-                    .Include(b => b.Categories)
+                    .Include(navigationPropertyPath: b => b.Categories)
                     .Include(b => b.Copies)
                     .FirstOrDefault(b => b.Id == model.Id);
                 if (book == null)
@@ -223,56 +209,21 @@ namespace Rent2Read.Web.Controllers
                 {
                     if (!string.IsNullOrEmpty(book.ImageUrl))
                 {  
-                    var oldImagePath =$"{_webHostEnvironment.WebRootPath}{book.ImageUrl}";
-                        //make sure there is actually file with this image in this location.
-                        //So that it doesn't try to delete something that doesn't exist(cause an exception).
-                        var oldThumbPath = $"{_webHostEnvironment.WebRootPath}{book.ImageThumbnailUrl}";
-
-                    if (System.IO.File.Exists(oldImagePath))
-                    {
-                        System.IO.File.Delete(oldImagePath);
-                    }
-
-                    if (System.IO.File.Exists(oldThumbPath))
-                    {
-                        System.IO.File.Delete(oldThumbPath);
-                    }
+                   _imageService.Delete(book.ImageUrl,book.ImageThumbnailUrl);
                    /* await _cloudinary.DeleteResourcesAsync(book.ImagePublicId);*/
                 }
-
-
-                    var extension = Path.GetExtension(model.Image.FileName);
-                     
-                    if (!_allowedExtensions.Contains(extension))
+                    var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}";//To make sure that the image name will never be repeated
+                    var (isUploaded, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, "/images/books", true);
+                    if (isUploaded)
                     {
-                        ModelState.AddModelError(nameof(model.Image), Errors.NotAllowedExtension);
+                        model.ImageUrl = $"/images/books/{imageName}";
+                        model.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(nameof(Image), errorMessage!);
                         return View("Form", PopulateViewModel(model));
                     }
-
-                    if (model.Image.Length > _maxAllowedSize)
-                    {
-                        ModelState.AddModelError(nameof(model.Image), Errors.MaxSize);
-                        return View("Form", PopulateViewModel(model));
-                    }
-                      
-                    var imageName = $"{Guid.NewGuid()}{extension}";//To make sure that the image name will never be repeated
-
-                    var path = Path.Combine($"{_webHostEnvironment.WebRootPath}/images/books", imageName);
-                   
-                    var thumbPath = Path.Combine($"{_webHostEnvironment.WebRootPath}/images/books/thumb", imageName);
-
-                    using var stream = System.IO.File.Create(path);
-                    
-                    await model.Image.CopyToAsync(stream);
-                    stream.Dispose();
-
-                    model.ImageUrl = $"/images/books/{imageName}";
-                    model.ImageThumbnailUrl = $"/images/books/thumb/{imageName}";
-                    using var image = Image.Load(model.Image.OpenReadStream());
-                    var ratio = (float)image.Width / 200;
-                    var height = image.Height / ratio;
-                    image.Mutate(i => i.Resize(width: 200, height: (int)height));
-                    image.Save(thumbPath);
 
 
                     /* using var stream = model.Image.OpenReadStream();
