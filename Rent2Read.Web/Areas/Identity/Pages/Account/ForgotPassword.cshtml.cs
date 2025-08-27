@@ -21,11 +21,13 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _emailSender;
+        private readonly IEmailBody _emailBody;
 
-        public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender)
+        public ForgotPasswordModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender, IEmailBody emailBody)
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _emailBody = emailBody;
         }
 
         /// <summary>
@@ -71,10 +73,19 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
+
+                var body = _emailBody.GetEmailBody(
+            "https://res.cloudinary.com/rent2read/image/upload/v1756315834/icon-positive-vote-2_jcxdww_toe0yr.svg",
+                    $"Hey {user.FullName},",
+                    "Please click the below button to reset your password",
+                    $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
+                    "Reset Password"
+            );
+
                 await _emailSender.SendEmailAsync(
                     Input.Email,
                     "Reset Password",
-                    $"Please reset your password by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    body);
 
                 return RedirectToPage("./ForgotPasswordConfirmation");
             }

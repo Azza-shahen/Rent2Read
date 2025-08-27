@@ -2,18 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Rent2Read.Web.Core.Models;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Text.Encodings.Web;
+using Rent2Read.Web.Services;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account
 {
@@ -22,11 +23,14 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _emailSender;
+        private readonly IEmailBody _emailBody;
 
-        public ResendEmailConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender)
+
+        public ResendEmailConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender emailSender, IEmailBody emailBody)
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _emailBody = emailBody;
         }
 
         /// <summary>
@@ -47,12 +51,16 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            //[EmailAddress]
+            public string Username { get; set; }
         }
 
-        public void OnGet()
+        public void OnGet(string username)
         {
+            Input = new()
+            {
+                Username = username
+            };
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -62,7 +70,9 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            var user = await _userManager.FindByEmailAsync(Input.Email);
+                           /* Check if username/email exists and is not deleted before login(allow ligin using emailor username)*/
+                var userName = Input.Username.ToUpper();
+                var user=await _userManager.Users.FirstOrDefaultAsync(u=>(u.NormalizedUserName== userName|| u.NormalizedEmail== userName)&& !u.IsDeleted);
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
@@ -77,10 +87,18 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                 pageHandler: null,
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
+    
+                     var body = _emailBody.GetEmailBody(
+                "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg",
+                        $"Hey {user.FullName}, thanks for joining us!",
+                        "please confirm your email",
+                        $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
+                        "Active Account!"
+                );
             await _emailSender.SendEmailAsync(
-                Input.Email,
+                user.Email,
                 "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                body);
 
             ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
             return Page();

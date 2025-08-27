@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Rent2Read.Web.Core.Mapping;
 using Rent2Read.Web.Data;
@@ -61,6 +62,8 @@ builder.Services.Configure<IdentityOptions>(options =>
 //so that ASP.NET Core Identity will use the Custom Factory I created instead of using the Default UserClaimsPrincipalFactory.
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
 builder.Services.AddTransient<IImageService, ImageService>();   
+builder.Services.AddTransient<IEmailSender, EmailSender>();   
+builder.Services.AddTransient<IEmailBody, EmailBody>();   
 
 builder.Services.AddControllersWithViews();
 
@@ -69,6 +72,11 @@ builder.Services.AddExpressiveAnnotations();
 
 //Configuration Binding of CloudinarySettings class with data in appsettings.json file 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+//link MailSettings class to the "MailSettings" section in the appsettings.json
+
+
+
 
 //builder.Services.AddAutoMapper(typeof(MappingProfile));//Registers only from the given type and nearby classes. Limited scope.
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
@@ -76,7 +84,7 @@ builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline. 
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();

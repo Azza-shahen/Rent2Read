@@ -63,9 +63,11 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = Errors.MaxMinLength, MinimumLength = 8)]
             [DataType(DataType.Password)]
             [Display(Name = "New password")]
+            [RegularExpression(RegexPatterns.Password, ErrorMessage = Errors.WeakPassword)]
+            
             public string NewPassword { get; set; }
 
             /// <summary>
@@ -74,7 +76,7 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
             /// </summary>
             [DataType(DataType.Password)]
             [Display(Name = "Confirm new password")]
-            [Compare("NewPassword", ErrorMessage = "The new password and confirmation password do not match.")]
+            [Compare("NewPassword", ErrorMessage = Errors.ConfirmPasswordNotMatch)]
             public string ConfirmPassword { get; set; }
         }
 
