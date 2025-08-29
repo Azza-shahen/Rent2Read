@@ -12,7 +12,7 @@ namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
     public class BooksController(ApplicationDbContext _dbContext, IMapper _mapper
-                                        , IWebHostEnvironment _webHostEnvironment
+                                       /* , IWebHostEnvironment _webHostEnvironment*/
                                         ,IImageService _imageService
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
     { /* IWebHostEnvironment => - to know the location of wwwroot and store images there.
@@ -39,8 +39,6 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-
-
         #region GetBooks
 
         // This action is used to provide server-side data to DataTables.

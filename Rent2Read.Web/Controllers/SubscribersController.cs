@@ -1,0 +1,220 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using Rent2Read.Web.Core.Models;
+using Rent2Read.Web.Services;
+using SixLabors.ImageSharp;
+
+namespace Rent2Read.Web.Controllers
+{
+    [Authorize(Roles = AppRoles.Reception)]
+    public class SubscribersController(ApplicationDbContext _dbContext, IMapper _mapper
+                                            , IImageService _imageService) : Controller
+    {
+        #region Index
+        public IActionResult Index()
+        {
+            return View();
+        } 
+        #endregion 
+        #region Search
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Search(SearchFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var subscriber = _dbContext.Subscribers
+                            .SingleOrDefault(s =>
+                                   s.Email == model.Value
+                                || s.NationalId == model.Value
+                                || s.MobileNumber == model.Value);
+
+           var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
+
+            return PartialView("_Result", viewModel);
+        }
+        #endregion
+        #region Create
+        public IActionResult Create()
+        {
+            var viewModel = PopulateViewModel();
+            return View("Form", viewModel);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(SubscriberFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View("Form", PopulateViewModel(model));
+
+            var Subscriber = _mapper.Map<Subscriber>(model);
+
+            var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image!.FileName)}";
+            var imagePath = "/images/Subscribers";
+
+            var (isUploaded, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, imagePath, hasThumbnail: true);
+
+            if (!isUploaded)
+            {
+                ModelState.AddModelError("Image", errorMessage!);
+                return View("Form", PopulateViewModel(model));
+            }
+
+            Subscriber.ImageUrl = $"{imagePath}/{imageName}";
+            Subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
+            Subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+            _dbContext.Add(Subscriber);
+            _dbContext.SaveChanges();
+
+            //TODO: Send welcome email
+
+            return RedirectToAction(nameof(Index), new { id = Subscriber.Id });
+        }
+
+        #endregion
+
+        #region Details
+        public IActionResult Details(int id)
+        {
+            var subscriber = _dbContext.Subscribers
+                .Include(s => s.Governorate)
+                .Include(s => s.Area)
+                .SingleOrDefault(s => s.Id == id);
+
+            if (subscriber is null)
+                return NotFound();
+
+            var viewModel = _mapper.Map<SubscriberViewModel>(subscriber);
+
+            return View(viewModel);
+        }
+        #endregion
+        #region Edit
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var subscriber = _dbContext.Subscribers.Find(id);
+            if (subscriber is null)
+                return NotFound();
+            var model = _mapper.Map<SubscriberFormViewModel>(subscriber);
+            var viewModel = PopulateViewModel(model);
+            return View("Form", viewModel);
+
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken] 
+        public async Task<IActionResult> Edit(SubscriberFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View("Form", PopulateViewModel(model));
+
+            var subscriber = _dbContext.Subscribers.Find(model.Id);
+
+            if (subscriber is null)
+                return NotFound();
+
+            if (model.Image is not null)
+            {
+                if (!string.IsNullOrEmpty(subscriber.ImageUrl))
+                    _imageService.Delete(subscriber.ImageUrl, subscriber.ImageThumbnailUrl);
+
+                var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}";
+                var imagePath = "/images/subscribers";
+
+                var (isUploaded, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, imagePath, hasThumbnail: true);
+
+                if (!isUploaded)
+                {
+                    ModelState.AddModelError("Image", errorMessage!);
+                    return View("Form", PopulateViewModel(model));
+                }
+
+                model.ImageUrl = $"{imagePath}/{imageName}";
+                model.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
+            }
+
+            else if (!string.IsNullOrEmpty(subscriber.ImageUrl))
+            {
+                model.ImageUrl = subscriber.ImageUrl;
+                model.ImageThumbnailUrl = subscriber.ImageThumbnailUrl;
+            }
+
+            subscriber = _mapper.Map(model, subscriber);
+            subscriber.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            subscriber.LastUpdatedOn = DateTime.Now;
+
+            _dbContext.SaveChanges();
+
+            return RedirectToAction(nameof(Details), new { id = subscriber.Id });
+        }
+        #endregion
+        #region GetAreas
+        [AjaxOnly]
+        public IActionResult GetAreas(int governorateId)
+        {
+
+            var areas = _dbContext.Areas
+                           .Where(a => a.GovernorateId == governorateId && !a.IsDeleted)
+                           .OrderBy(g => g.Name)
+                           .ToList();
+
+
+            return Ok(_mapper.Map<IEnumerable<SelectListItem>>(areas));
+        }
+
+        #endregion
+        private SubscriberFormViewModel PopulateViewModel(SubscriberFormViewModel? model = null)
+        {
+            SubscriberFormViewModel viewModel = model is null ? new SubscriberFormViewModel() : model;
+
+            var governorates = _dbContext.Governorates.Where(a => !a.IsDeleted).OrderBy(a => a.Name).ToList();
+            viewModel.Governorates = _mapper.Map<IEnumerable<SelectListItem>>(governorates);
+
+            if (model?.GovernorateId > 0)
+            {
+                var areas = _dbContext.Areas
+                    .Where(a => a.GovernorateId == model.GovernorateId && !a.IsDeleted)
+                    .OrderBy(a => a.Name)
+                    .ToList();
+
+                viewModel.Areas = _mapper.Map<IEnumerable<SelectListItem>>(areas);
+            }
+
+            return viewModel;
+        }
+        #region Allowed
+
+        public IActionResult AllowNationalId(SubscriberFormViewModel model)
+        {
+            var Subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
+            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+
+            return Json(isAllowed);
+        }
+
+        public IActionResult AllowMobileNumber(SubscriberFormViewModel model)
+        {
+            var Subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.MobileNumber == model.MobileNumber);
+            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+
+            return Json(isAllowed);
+        }
+
+        public IActionResult AllowEmail(SubscriberFormViewModel model)
+        {
+            var Subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.Email == model.Email);
+            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+
+            return Json(isAllowed);
+        }
+
+        #endregion
+    }
+}

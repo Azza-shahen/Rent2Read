@@ -205,17 +205,17 @@ $(function () {
     //select2
     applySelect2();
     //Datepicker
-
-/*    $('.js-datepicker').daterangepicker({
+/*
+    $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
         drops: 'up',
-      maxDate: new Date()
-    
+      maxDate: new Date(),
+ 
         }
-     
+
     );*/
-    //Datepicker
+   // Datepicker
     $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
