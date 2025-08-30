@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+// Enable ASP.NET Core Data Protection (used for encrypting cookies, TempData, etc.)
+// Set a unique ApplicationName = "Rent2Read" to avoid key conflicts when sharing the same key storage
+builder.Services.AddDataProtection().SetApplicationName(nameof(Rent2Read));
 
 
 /*builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)

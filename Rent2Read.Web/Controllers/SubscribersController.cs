@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.DotNet.Scaffolding.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using Rent2Read.Web.Core.Models;
@@ -11,9 +13,13 @@ using SixLabors.ImageSharp;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Reception)]
-    public class SubscribersController(ApplicationDbContext _dbContext, IMapper _mapper
+    public class SubscribersController(ApplicationDbContext _dbContext
+                                            , IDataProtectionProvider provider
+                                            , IMapper _mapper
                                             , IImageService _imageService) : Controller
     {
+        private readonly IDataProtector _dataProtector = provider.CreateProtector("MySecureKey");
+
         #region Index
         public IActionResult Index()
         {
@@ -36,6 +42,10 @@ namespace Rent2Read.Web.Controllers
 
            var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
 
+            if(subscriber is not null)
+            viewModel.Key=_dataProtector.Protect(subscriber.Id.ToString());
+            // Encrypt the Subscriber's Id using Data Protection to generate a secure Key for use in the ViewModel
+            //(so it cannot be exposed directly in the client side)
             return PartialView("_Result", viewModel);
         }
         #endregion
@@ -52,7 +62,7 @@ namespace Rent2Read.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
-            var Subscriber = _mapper.Map<Subscriber>(model);
+            var subscriber = _mapper.Map<Subscriber>(model);
 
             var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image!.FileName)}";
             var imagePath = "/images/Subscribers";
@@ -65,45 +75,53 @@ namespace Rent2Read.Web.Controllers
                 return View("Form", PopulateViewModel(model));
             }
 
-            Subscriber.ImageUrl = $"{imagePath}/{imageName}";
-            Subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
-            Subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            subscriber.ImageUrl = $"{imagePath}/{imageName}";
+            subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
+            subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-            _dbContext.Add(Subscriber);
+            _dbContext.Add(subscriber);
             _dbContext.SaveChanges();
 
             //TODO: Send welcome email
 
-            return RedirectToAction(nameof(Index), new { id = Subscriber.Id });
+            var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
+            return RedirectToAction(nameof(Details), new { id = subscriberId });
         }
 
         #endregion
 
         #region Details
-        public IActionResult Details(int id)
+        public IActionResult Details(string id)
         {
+            var subsciberId=int.Parse(_dataProtector.Unprotect(id));
+            // Unprotect(decrypt) the encrypted subscriber Id (restore the original Id as integer)
+
             var subscriber = _dbContext.Subscribers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
-                .SingleOrDefault(s => s.Id == id);
+                .SingleOrDefault(s => s.Id == subsciberId);
 
             if (subscriber is null)
                 return NotFound();
 
             var viewModel = _mapper.Map<SubscriberViewModel>(subscriber);
+            viewModel.Key = id;
 
             return View(viewModel);
         }
         #endregion
         #region Edit
         [HttpGet]
-        public IActionResult Edit(int id)
+        public IActionResult Edit(string id)
         {
-            var subscriber = _dbContext.Subscribers.Find(id);
+            var subscriberId=int.Parse(_dataProtector.Unprotect(id));
+            var subscriber = _dbContext.Subscribers.Find(subscriberId);
             if (subscriber is null)
                 return NotFound();
             var model = _mapper.Map<SubscriberFormViewModel>(subscriber);
             var viewModel = PopulateViewModel(model);
+
+            viewModel.Key = id;
             return View("Form", viewModel);
 
         }
@@ -115,7 +133,9 @@ namespace Rent2Read.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
-            var subscriber = _dbContext.Subscribers.Find(model.Id);
+            var subscriberId = int.Parse(_dataProtector.Unprotect(model.Key!));
+
+            var subscriber = _dbContext.Subscribers.Find(subscriberId);
 
             if (subscriber is null)
                 return NotFound();
@@ -152,7 +172,7 @@ namespace Rent2Read.Web.Controllers
 
             _dbContext.SaveChanges();
 
-            return RedirectToAction(nameof(Details), new { id = subscriber.Id });
+            return RedirectToAction(nameof(Details), new { id = model.Key });
         }
         #endregion
         #region GetAreas
@@ -193,24 +213,36 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult AllowNationalId(SubscriberFormViewModel model)
         {
-            var Subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
-            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+            var subscriberId = 0;
+            if(!string.IsNullOrEmpty(model.Key))
+             subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
+            var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
             return Json(isAllowed);
         }
 
         public IActionResult AllowMobileNumber(SubscriberFormViewModel model)
         {
-            var Subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.MobileNumber == model.MobileNumber);
-            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+            var subscriberId = 0;
+            if (!string.IsNullOrEmpty(model.Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.MobileNumber == model.MobileNumber);
+            var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
             return Json(isAllowed);
         }
 
         public IActionResult AllowEmail(SubscriberFormViewModel model)
         {
-            var Subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.Email == model.Email);
-            var isAllowed = Subscriber is null || Subscriber.Id.Equals(model.Id);
+            var subscriberId = 0;
+            if (!string.IsNullOrEmpty(model.Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+
+            var subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.Email == model.Email);
+            var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
 
             return Json(isAllowed);
         }
