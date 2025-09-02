@@ -17,5 +17,8 @@
         public string? Address { get; set; }
         public bool IsBlackListed { get; set; }
         public DateTime CreatedOn { get; set; }
+
+        public ICollection<SubscriptionViewModel> Subscriptions { get; set; } = new List<SubscriptionViewModel>();
+
     }
 }

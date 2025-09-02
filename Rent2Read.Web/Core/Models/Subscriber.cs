@@ -38,5 +38,7 @@
 
         public int AreaId { get; set; }
         public Area? Area { get; set; }
+
+        public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
     }
 }

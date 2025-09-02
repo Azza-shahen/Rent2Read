@@ -38,6 +38,7 @@ namespace Rent2Read.Web.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Governorate> Governorates { get; set; }
         public DbSet<Subscriber> Subscribers { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
 
     }
 }

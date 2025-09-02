@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+
+using Microsoft.AspNetCore.Identity.UI.Services;
+
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.DotNet.Scaffolding.Shared;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-using Rent2Read.Web.Core.Models;
-using Rent2Read.Web.Services;
-using SixLabors.ImageSharp;
+
+
 
 namespace Rent2Read.Web.Controllers
 {
@@ -23,9 +20,10 @@ namespace Rent2Read.Web.Controllers
         #region Index
         public IActionResult Index()
         {
-            return View();
-        } 
-        #endregion 
+         
+              return View();
+          }
+        #endregion
         #region Search
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -40,10 +38,10 @@ namespace Rent2Read.Web.Controllers
                                 || s.NationalId == model.Value
                                 || s.MobileNumber == model.Value);
 
-           var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
+            var viewModel = _mapper.Map<SubscriberSearchResultViewModel>(subscriber);
 
-            if(subscriber is not null)
-            viewModel.Key=_dataProtector.Protect(subscriber.Id.ToString());
+            if (subscriber is not null)
+                viewModel.Key = _dataProtector.Protect(subscriber.Id.ToString());
             // Encrypt the Subscriber's Id using Data Protection to generate a secure Key for use in the ViewModel
             //(so it cannot be exposed directly in the client side)
             return PartialView("_Result", viewModel);
@@ -79,6 +77,15 @@ namespace Rent2Read.Web.Controllers
             subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
             subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
+            Subscription subscription = new()
+            {
+                            CreatedById=subscriber.CreatedById,
+                            CreatedOn=subscriber.CreatedOn,
+                            StartDate= DateTime.Today,
+                            EndDate= DateTime.Today.AddYears(1)
+            };
+            subscriber.Subscriptions.Add(subscription);
+
             _dbContext.Add(subscriber);
             _dbContext.SaveChanges();
 
@@ -93,12 +100,13 @@ namespace Rent2Read.Web.Controllers
         #region Details
         public IActionResult Details(string id)
         {
-            var subsciberId=int.Parse(_dataProtector.Unprotect(id));
+            var subsciberId = int.Parse(_dataProtector.Unprotect(id));
             // Unprotect(decrypt) the encrypted subscriber Id (restore the original Id as integer)
 
             var subscriber = _dbContext.Subscribers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
+                .Include(s => s.Subscriptions)
                 .SingleOrDefault(s => s.Id == subsciberId);
 
             if (subscriber is null)
@@ -114,7 +122,7 @@ namespace Rent2Read.Web.Controllers
         [HttpGet]
         public IActionResult Edit(string id)
         {
-            var subscriberId=int.Parse(_dataProtector.Unprotect(id));
+            var subscriberId = int.Parse(_dataProtector.Unprotect(id));
             var subscriber = _dbContext.Subscribers.Find(subscriberId);
             if (subscriber is null)
                 return NotFound();
@@ -127,7 +135,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken] 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(SubscriberFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -175,6 +183,52 @@ namespace Rent2Read.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = model.Key });
         }
         #endregion
+
+        #region RenewSubscription
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RenewSubscription(string sKey)
+        {
+            var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));
+
+            Subscriber? subscriber = _dbContext.Subscribers
+                                        .Include(s => s.Subscriptions)
+                                        .SingleOrDefault(s => s.Id == subscriberId);
+
+            if (subscriber is null)
+                return NotFound();
+
+            if (subscriber.IsBlackListed)
+                return BadRequest();
+
+            var lastSubscription = subscriber.Subscriptions.Last();
+
+            var startDate = lastSubscription.EndDate < DateTime.Today
+                            ? DateTime.Today
+                            : lastSubscription.EndDate.AddDays(1);
+
+            Subscription newSubscription = new()
+            {
+                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
+                CreatedOn = DateTime.Now,
+                StartDate = startDate,
+                EndDate   = startDate.AddYears(1)
+            };
+
+            subscriber.Subscriptions.Add(newSubscription);
+
+
+            //TODO: Send Message email
+           
+
+            _dbContext.SaveChanges();
+
+            var viewModel = _mapper.Map<SubscriptionViewModel>(newSubscription);
+
+            return PartialView("_SubscriptionRow", viewModel);
+        }
+        #endregion
         #region GetAreas
         [AjaxOnly]
         public IActionResult GetAreas(int governorateId)
@@ -214,8 +268,8 @@ namespace Rent2Read.Web.Controllers
         public IActionResult AllowNationalId(SubscriberFormViewModel model)
         {
             var subscriberId = 0;
-            if(!string.IsNullOrEmpty(model.Key))
-             subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
+            if (!string.IsNullOrEmpty(model.Key))
+                subscriberId = int.Parse(_dataProtector.Unprotect(model.Key));
 
             var subscriber = _dbContext.Subscribers.SingleOrDefault(b => b.NationalId == model.NationalId);
             var isAllowed = subscriber is null || subscriber.Id.Equals(subscriberId);
