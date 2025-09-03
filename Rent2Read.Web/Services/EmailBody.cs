@@ -2,22 +2,24 @@
 {
     public class EmailBody(IWebHostEnvironment _webHostEnvironment) : IEmailBody
     {
-        string IEmailBody.GetEmailBody(string imageUrl, string header, string body, string url, string linkTitle)
+        public string GetEmailBody(string template, Dictionary<string, string> placeholders)
         {
-            var filepath = $"{_webHostEnvironment.WebRootPath}/templates/email.html";
+            var filePath = $"{_webHostEnvironment.WebRootPath}/templates/{template}.html";
             // I specify the location of the HTML file that contains the message template
-            StreamReader str = new(filepath);//read the file using StreamReader
 
-            var template = str.ReadToEnd();//read all the contents of the file as a string
+            StreamReader str = new(filePath);//read the file using StreamReader
+
+            var templateContent = str.ReadToEnd();//read all the contents of the file as a string
             str.Close();
 
             // perform a Replace in the template to replace the placeholders with the real values.
-            return template
-                     .Replace(oldValue: "[imageUrl]", newValue: imageUrl)
-                     .Replace(oldValue: "[header]", newValue: header)
-                     .Replace(oldValue: "[body]", newValue: body)
-                     .Replace(oldValue: "[url]", newValue: url)
-                     .Replace(oldValue: "[linkTitle]", newValue: linkTitle);
+
+            foreach (var placeholder in placeholders)
+                templateContent = templateContent.Replace($"[{placeholder.Key}]", placeholder.Value);
+
+            return templateContent;
+
+
         }
     }
 }

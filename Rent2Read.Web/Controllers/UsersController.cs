@@ -1,13 +1,8 @@
-﻿using AspNetCoreGeneratedDocument;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
-using Rent2Read.Web.Core.Models;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 
@@ -15,15 +10,15 @@ namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Admin)]
     public class UsersController(UserManager<ApplicationUser> _userManager
-                                 ,RoleManager<IdentityRole> _roleManager
-                                 ,IEmailSender _emailSender     
-                                 ,IEmailBody _emailBody
+                                 , RoleManager<IdentityRole> _roleManager
+                                 , IEmailSender _emailSender
+                                 , IEmailBody _emailBody
                                  , IMapper _mapper) : Controller
     {
         #region Index
         public async Task<IActionResult> Index()
         {
-      
+
             var users = await _userManager.Users.ToListAsync();
             var viewModel = _mapper.Map<IEnumerable<UserViewModel>>(users);
             return View(viewModel);
@@ -35,7 +30,8 @@ namespace Rent2Read.Web.Controllers
         [AjaxOnly]
         public async Task<IActionResult> Create()
         {
-            var viewModel= new UserFormViewModel {
+            var viewModel = new UserFormViewModel
+            {
                 Roles = await _roleManager.Roles
                              .Select(r => new SelectListItem
                              {
@@ -44,7 +40,7 @@ namespace Rent2Read.Web.Controllers
                              })
                              .ToListAsync()
             };
-            return PartialView("_Form",viewModel);
+            return PartialView("_Form", viewModel);
         }
 
 
@@ -54,7 +50,7 @@ namespace Rent2Read.Web.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
-         
+
             ApplicationUser user = new()
             {
                 FullName = model.FullName,
@@ -76,14 +72,16 @@ namespace Rent2Read.Web.Controllers
                     pageHandler: null,
                     values: new { area = "Identity", userId = user.Id, code = code },
                     protocol: Request.Scheme);
-               
 
-                var body = _emailBody.GetEmailBody(
-            "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg",
-                    $"Hey {user.FullName}, thanks for joining us!",
-                    "please confirm your email",
-                    $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
-                    "Active Account!");
+                var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg" },
+                    { "header", $"Hey {user.FullName}, thanks for joining us!" },
+                    { "body",  "please confirm your email" },
+                    { "url",   $"{HtmlEncoder.Default.Encode(callbackUrl!)}"},
+                    { "linkTitle",  "Active Account!" }
+                };
+                var body = _emailBody.GetEmailBody(EmailTemplates.Email, placeholders);
 
 
                 await _emailSender.SendEmailAsync(user.Email, "Confirm your email",
@@ -94,7 +92,7 @@ namespace Rent2Read.Web.Controllers
             }
 
 
-            return BadRequest(string.Join(',',result.Errors.Select(e=>e.Description)));
+            return BadRequest(string.Join(',', result.Errors.Select(e => e.Description)));
         }
 
         #endregion
@@ -118,7 +116,7 @@ namespace Rent2Read.Web.Controllers
                                     Value = r.Name
                                 })
                                 .ToListAsync();
-      
+
             return PartialView("_Form", viewModel);
         }
 
@@ -148,7 +146,7 @@ namespace Rent2Read.Web.Controllers
 
                 if (rolesUpdated) //If there is a difference, it means the roles have changed.
                 {
-                   // It deletes all old roles and adds the new ones.
+                    // It deletes all old roles and adds the new ones.
                     await _userManager.RemoveFromRolesAsync(user, currentRoles);
                     await _userManager.AddToRolesAsync(user, model.SelectedRoles);
                 }
@@ -175,9 +173,9 @@ namespace Rent2Read.Web.Controllers
             if (user is null)
                 return NotFound();
 
-           var viewModel = new ResetPasswordFormViewModel { Id = user.Id };
+            var viewModel = new ResetPasswordFormViewModel { Id = user.Id };
 
-            return PartialView("_ResetPasswordForm",viewModel);
+            return PartialView("_ResetPasswordForm", viewModel);
         }
 
         [HttpPost]
@@ -238,7 +236,7 @@ namespace Rent2Read.Web.Controllers
             await _userManager.UpdateAsync(user);
             if (user.IsDeleted)
             {
-               await  _userManager.UpdateSecurityStampAsync(user);//forces the user to change the Security Stamp.
+                await _userManager.UpdateSecurityStampAsync(user);//forces the user to change the Security Stamp.
             }
 
             return Ok(user.LastUpdatedOn.ToString());
@@ -259,7 +257,7 @@ namespace Rent2Read.Web.Controllers
             var isLocked = await _userManager.IsLockedOutAsync(user);
 
             if (isLocked)
-                await _userManager.SetLockoutEndDateAsync(user, lockoutEnd:null);
+                await _userManager.SetLockoutEndDateAsync(user, lockoutEnd: null);
 
             return Ok();
         }
@@ -281,7 +279,7 @@ namespace Rent2Read.Web.Controllers
             var isAllowed = user is null || user.Id.Equals(model.Id);
 
             return Json(isAllowed);
-        } 
+        }
         #endregion
     }
 }

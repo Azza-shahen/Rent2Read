@@ -3,14 +3,7 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Rent2Read.Web.Core.Models;
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Net.NetworkInformation;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -62,13 +55,13 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
             /// </summary>
             /// 
 
-            [Required,MaxLength(length: 100, ErrorMessage = Errors.MaxLength), Display(Name = "Full Name")
+            [Required, MaxLength(length: 100, ErrorMessage = Errors.MaxLength), Display(Name = "Full Name")
                  , RegularExpression(RegexPatterns.CharactersOnly_Eng, ErrorMessage = Errors.OnlyEnglishLetters)]
             public string FullName { get; set; } = null!;
 
             [Phone]
-            [Display(Name = "Phone number"),MaxLength(11,ErrorMessage =Errors.MaxLength)
-                ,RegularExpression(RegexPatterns.MobileNumber,ErrorMessage =Errors.InvalidMobileNumber)]
+            [Display(Name = "Phone number"), MaxLength(11, ErrorMessage = Errors.MaxLength)
+                , RegularExpression(RegexPatterns.MobileNumber, ErrorMessage = Errors.InvalidMobileNumber)]
             public string PhoneNumber { get; set; }
 
             public IFormFile Avatar { get; set; }
@@ -84,7 +77,7 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                FullName=user.FullName,
+                FullName = user.FullName,
                 PhoneNumber = phoneNumber
             };
         }
@@ -114,10 +107,10 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
-            if(Input.Avatar is not null)
+            if (Input.Avatar is not null)
             {
                 _imageService.Delete($"/images/users/{user.Id}.png", null);
-                var (isUploaded, errorMessage) = await _imageService.UploadAsync(Input.Avatar,$"{ user.Id}.png", "/images/users",false);
+                var (isUploaded, errorMessage) = await _imageService.UploadAsync(Input.Avatar, $"{user.Id}.png", "/images/users", false);
                 if (!isUploaded)
                 {
                     ModelState.AddModelError("Input.Avatar", errorMessage);
@@ -127,8 +120,8 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
 
             }
 
-            else if(Input.ImageRemoved)
-               _imageService.Delete($"/images/users/{user.Id}.png", null);
+            else if (Input.ImageRemoved)
+                _imageService.Delete($"/images/users/{user.Id}.png", null);
 
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
@@ -143,20 +136,20 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
             }
             if (Input.FullName != user.FullName)
             {
-                user.FullName= Input.FullName;
+                user.FullName = Input.FullName;
                 var setFullName = await _userManager.UpdateAsync(user);
 
-                   
-                    if (!setFullName.Succeeded)
-                    {
-                        StatusMessage = "Unexpected error when trying to set full name.";
-                        return RedirectToPage();
-                    }
-              
+
+                if (!setFullName.Succeeded)
+                {
+                    StatusMessage = "Unexpected error when trying to set full name.";
+                    return RedirectToPage();
+                }
+
             }
 
 
-                await _signInManager.RefreshSignInAsync(user);
+            await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
         }

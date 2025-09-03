@@ -2,19 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using Rent2Read.Web.Core.Models;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account
 {
@@ -29,7 +19,7 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = logger;
-            
+
         }
 
         /// <summary>
@@ -70,7 +60,7 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
             /// </summary>
             [Required]
             //[EmailAddress]
-            [Display(Name ="Username/Email")]
+            [Display(Name = "Username/Email")]
             public string Username { get; set; }
 
             /// <summary>
@@ -120,7 +110,7 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
 
                 /* Check if username/email exists and is not deleted before login(allow ligin using emailor username)*/
                 var userName = Input.Username.ToUpper();
-                var user=await _userManager.Users.FirstOrDefaultAsync(u=>(u.NormalizedUserName== userName|| u.NormalizedEmail== userName)&& !u.IsDeleted);
+                var user = await _userManager.Users.FirstOrDefaultAsync(u => (u.NormalizedUserName == userName || u.NormalizedEmail == userName) && !u.IsDeleted);
                 if (user is null)
                 {
 
@@ -143,9 +133,9 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                     _logger.LogWarning("User account locked out.");
                     return RedirectToPage("./Lockout");
                 }
-                if(result.IsNotAllowed)
+                if (result.IsNotAllowed)
                 {
-                    return RedirectToPage("./ResendEmailConfirmation",new  { username=Input.Username});
+                    return RedirectToPage("./ResendEmailConfirmation", new { username = Input.Username });
                 }
                 else
                 {

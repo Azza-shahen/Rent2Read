@@ -57,7 +57,7 @@ namespace Rent2Read.Web.Core.Mapping
 
 
             CreateMap<Subscriber, SubscriberSearchResultViewModel>()
-                .ForMember(dest => dest.FullName,opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
 
             CreateMap<Subscriber, SubscriberViewModel>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
@@ -67,4 +67,4 @@ namespace Rent2Read.Web.Core.Mapping
             CreateMap<Subscription, SubscriptionViewModel>();
         }
     }
-    }
+}

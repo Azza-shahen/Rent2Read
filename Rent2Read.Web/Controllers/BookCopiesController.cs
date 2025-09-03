@@ -3,7 +3,7 @@
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BookCopiesController (ApplicationDbContext _dbContext, IMapper _mapper): Controller
+    public class BookCopiesController(ApplicationDbContext _dbContext, IMapper _mapper) : Controller
     {
 
         #region Create

@@ -2,17 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Rent2Read.Web.Core.Models;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -164,13 +159,15 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
                 values: new { area = "Identity", userId = userId, code = code },
                 protocol: Request.Scheme);
 
-            var body = _emailBody.GetEmailBody(
-                "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg",
-                        $"Hey {user.FullName},",
-                        "please confirm your email",
-                        $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
-                        "Confirm Email"
-                );
+            var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg" },
+                    { "header", $"Hey {user.FullName}," },
+                    { "body", "please confirm your email"},
+                    { "url", $"{HtmlEncoder.Default.Encode(callbackUrl!)}" },
+                    { "linkTitle",  "Confirm Email" }
+                };
+            var body = _emailBody.GetEmailBody(EmailTemplates.Email, placeholders);
 
             await _emailSender.SendEmailAsync(
                 email,

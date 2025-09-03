@@ -1,8 +1,4 @@
-﻿
-using Humanizer;
-using System.Linq;
-
-namespace Rent2Read.Web.Core.Consts
+﻿namespace Rent2Read.Web.Core.Consts
 {
     public static class AppRoles
     {

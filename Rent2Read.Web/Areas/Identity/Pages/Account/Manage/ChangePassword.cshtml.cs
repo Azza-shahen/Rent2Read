@@ -2,14 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using Rent2Read.Web.Core.Models;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
 {
@@ -67,7 +61,7 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account.Manage
             [DataType(DataType.Password)]
             [Display(Name = "New password")]
             [RegularExpression(RegexPatterns.Password, ErrorMessage = Errors.WeakPassword)]
-            
+
             public string NewPassword { get; set; }
 
             /// <summary>

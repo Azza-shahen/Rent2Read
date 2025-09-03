@@ -1,10 +1,7 @@
-﻿using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using System.Linq.Dynamic.Core;
 
 
@@ -12,8 +9,8 @@ namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
     public class BooksController(ApplicationDbContext _dbContext, IMapper _mapper
-                                       /* , IWebHostEnvironment _webHostEnvironment*/
-                                        ,IImageService _imageService
+                                        /* , IWebHostEnvironment _webHostEnvironment*/
+                                        , IImageService _imageService
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
     { /* IWebHostEnvironment => - to know the location of wwwroot and store images there.
                                 -Checking environment(IsDevelopment)
@@ -54,14 +51,14 @@ namespace Rent2Read.Web.Controllers
             // start = the row you start from.
             //length=>The number of classes you take.
             var searchValue = Request.Form["search[value]"];
-           
+
             var sortColumnIndex = Request.Form["order[0][column]"];
-           
+
             var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
             var sortColumnDirection = Request.Form["order[0][dir]"]; // asc or desc
 
             IQueryable<Book> books = _dbContext.Books
-                .Include(b=>b.Author)
+                .Include(b => b.Author)
                 .Include(b => b.Categories)
                 .ThenInclude(c => c.Category);
 
@@ -74,7 +71,7 @@ namespace Rent2Read.Web.Controllers
             books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
 
             var data = books.Skip(start).Take(length).ToList();// Returns the required part of the data Only.
-            var mappedDate=_mapper.Map<IEnumerable< BookViewModel>>(data);
+            var mappedDate = _mapper.Map<IEnumerable<BookViewModel>>(data);
             var recordsTotal = books.Count(); // Total number of books
             var jsonData = new
             {
@@ -91,15 +88,15 @@ namespace Rent2Read.Web.Controllers
         public IActionResult Details(int id)
         {
             var book = _dbContext.Books
-                .Include(b=>b.Author)
-                .Include(b=>b.Copies)
-                .Include(b=>b.Categories)
-                .ThenInclude(c=>c.Category)
-                .SingleOrDefault(b=>b.Id ==id);
+                .Include(b => b.Author)
+                .Include(b => b.Copies)
+                .Include(b => b.Categories)
+                .ThenInclude(c => c.Category)
+                .SingleOrDefault(b => b.Id == id);
 
-            if(book is null)
+            if (book is null)
                 return NotFound();
-            var bookVM=_mapper.Map<BookViewModel>(book);
+            var bookVM = _mapper.Map<BookViewModel>(book);
             return View(bookVM);
         }
         #endregion
@@ -133,10 +130,10 @@ namespace Rent2Read.Web.Controllers
                     }
                     else
                     {
-                        ModelState.AddModelError(nameof(Image),result.errorMessage!);
-                        return View("Form",PopulateViewModel(model));
+                        ModelState.AddModelError(nameof(Image), result.errorMessage!);
+                        return View("Form", PopulateViewModel(model));
                     }
-                    
+
 
                     /*   using var stream = model.Image.OpenReadStream();
                        // Open a read-only Stream of the uploaded file (IFormFile) to use it for operations such as uploading or processing without saving the file to the server
@@ -155,15 +152,15 @@ namespace Rent2Read.Web.Controllers
 
                 foreach (var category in model.SelectedCategories)
                 {
-                   /* SelectedCategories contains the IDs of all chosen categories.
-                    I loop over them to add each one to the book's Categories collection.
-                    This ensures the many-to - many relationship is saved properly in the join table.*/
+                    /* SelectedCategories contains the IDs of all chosen categories.
+                     I loop over them to add each one to the book's Categories collection.
+                     This ensures the many-to - many relationship is saved properly in the join table.*/
 
-                      book.Categories.Add(new BookCategory { CategoryId = category });
+                    book.Categories.Add(new BookCategory { CategoryId = category });
                 }
                 _dbContext.Add(book);
                 _dbContext.SaveChanges();
-                return RedirectToAction(nameof(Details),new {id=book.Id});
+                return RedirectToAction(nameof(Details), new { id = book.Id });
 
             }
             return View("Form", PopulateViewModel(model));
@@ -174,15 +171,15 @@ namespace Rent2Read.Web.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var book = _dbContext.Books.Include(b=>b.Categories).FirstOrDefault(b=>b.Id==id);
+            var book = _dbContext.Books.Include(b => b.Categories).FirstOrDefault(b => b.Id == id);
             if (book == null)
             {
                 return NotFound();
             }
-            var model=_mapper.Map< BookFormViewModel >(book);
+            var model = _mapper.Map<BookFormViewModel>(book);
             var viewModel = PopulateViewModel(model);
-            viewModel.SelectedCategories=book.Categories.Select(c=>c.CategoryId).ToList();
-            return View("Form",viewModel);
+            viewModel.SelectedCategories = book.Categories.Select(c => c.CategoryId).ToList();
+            return View("Form", viewModel);
         }
 
         [HttpPost]
@@ -191,7 +188,7 @@ namespace Rent2Read.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-               
+
                 var book = _dbContext.Books
                     .Include(navigationPropertyPath: b => b.Categories)
                     .Include(b => b.Copies)
@@ -206,10 +203,10 @@ namespace Rent2Read.Web.Controllers
                 if (model.Image is not null)
                 {
                     if (!string.IsNullOrEmpty(book.ImageUrl))
-                {  
-                   _imageService.Delete(book.ImageUrl,book.ImageThumbnailUrl);
-                   /* await _cloudinary.DeleteResourcesAsync(book.ImagePublicId);*/
-                }
+                    {
+                        _imageService.Delete(book.ImageUrl, book.ImageThumbnailUrl);
+                        /* await _cloudinary.DeleteResourcesAsync(book.ImagePublicId);*/
+                    }
                     var imageName = $"{Guid.NewGuid()}{Path.GetExtension(model.Image.FileName)}";//To make sure that the image name will never be repeated
                     var (isUploaded, errorMessage) = await _imageService.UploadAsync(model.Image, imageName, "/images/books", true);
                     if (isUploaded)
@@ -238,19 +235,19 @@ namespace Rent2Read.Web.Controllers
 
 
                 }
-                else if(!string.IsNullOrEmpty(book.ImageUrl)) 
+                else if (!string.IsNullOrEmpty(book.ImageUrl))
                 {
-                    model.ImageUrl=book.ImageUrl;
-                    model.ImageThumbnailUrl=book.ImageThumbnailUrl;
+                    model.ImageUrl = book.ImageUrl;
+                    model.ImageThumbnailUrl = book.ImageThumbnailUrl;
                 }
 
-            
-                book=_mapper.Map(model,book);
-                book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
-                book.LastUpdatedOn= DateTime.Now;
 
-               /* book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl!);*/
-              /*  book.ImagePublicId = imagePublicid;*/
+                book = _mapper.Map(model, book);
+                book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                book.LastUpdatedOn = DateTime.Now;
+
+                /* book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl!);*/
+                /*  book.ImagePublicId = imagePublicid;*/
 
                 foreach (var category in model.SelectedCategories)
                 { /* SelectedCategories contains the IDs of all chosen categories.
@@ -263,7 +260,7 @@ namespace Rent2Read.Web.Controllers
                 {
                     foreach (var copy in book.Copies)
                     {
-                      copy.IsAvailableForRental = false;
+                        copy.IsAvailableForRental = false;
                     }
                 }
                 _dbContext.SaveChanges();
@@ -286,13 +283,13 @@ namespace Rent2Read.Web.Controllers
                 return NotFound();
             }
 
-       
+
             book.IsDeleted = !book.IsDeleted;
             book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             book.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok();
-        
+
         }
 
         #endregion
@@ -300,7 +297,7 @@ namespace Rent2Read.Web.Controllers
         #region AllowItem
         public IActionResult AllowItem(BookFormViewModel model)
         {
-            var book = _dbContext.Books.FirstOrDefault(b => b.Title == model.Title && b.AuthorId==model.AuthorId);
+            var book = _dbContext.Books.FirstOrDefault(b => b.Title == model.Title && b.AuthorId == model.AuthorId);
             var IsAllowed = book is null || book.Id.Equals(model.Id);
 
             return Json(IsAllowed);

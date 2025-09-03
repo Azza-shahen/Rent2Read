@@ -12,7 +12,7 @@ namespace Rent2Read.Web.Seeds
                 await roleManager.CreateAsync(new IdentityRole(AppRoles.Archive));
                 await roleManager.CreateAsync(new IdentityRole(AppRoles.Reception));
             }
-          
+
         }
     }
 }

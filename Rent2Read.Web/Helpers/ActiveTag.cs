@@ -28,7 +28,7 @@ namespace Rent2Read.Web.Helpers
                 return;
 
             // Get the current controller name from the route
-            var currentController = ViewContextData?.RouteData.Values["controller"]?.ToString()??string.Empty;
+            var currentController = ViewContextData?.RouteData.Values["controller"]?.ToString() ?? string.Empty;
 
             // Compare it with the ActiveWhen value provided by the developer
             if (currentController!.Equals(ActiveWhen))

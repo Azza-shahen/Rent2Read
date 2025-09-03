@@ -3,18 +3,12 @@
 #nullable disable
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Rent2Read.Web.Core.Models;
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
-using Rent2Read.Web.Services;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account
 {
@@ -70,9 +64,9 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                 return Page();
             }
 
-                           /* Check if username/email exists and is not deleted before login(allow ligin using emailor username)*/
-                var userName = Input.Username.ToUpper();
-                var user=await _userManager.Users.FirstOrDefaultAsync(u=>(u.NormalizedUserName== userName|| u.NormalizedEmail== userName)&& !u.IsDeleted);
+            /* Check if username/email exists and is not deleted before login(allow ligin using emailor username)*/
+            var userName = Input.Username.ToUpper();
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => (u.NormalizedUserName == userName || u.NormalizedEmail == userName) && !u.IsDeleted);
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
@@ -87,14 +81,18 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                 pageHandler: null,
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
-    
-                     var body = _emailBody.GetEmailBody(
-                "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg",
-                        $"Hey {user.FullName}, thanks for joining us!",
-                        "please confirm your email",
-                        $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
-                        "Active Account!"
-                );
+
+            var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/rent2read/image/upload/v1756294966/icon-positive-vote-1_rdexez_jbv5oh.svg" },
+                    { "header", $"Hey {user.FullName}, thanks for joining us!"},
+                    { "body",  "please confirm your email" },
+                    { "url",  $"{HtmlEncoder.Default.Encode(callbackUrl!)}"},
+                    { "linkTitle", "Active Account!" }
+                };
+            var body = _emailBody.GetEmailBody(EmailTemplates.Email, placeholders);
+
+
             await _emailSender.SendEmailAsync(
                 user.Email,
                 "Confirm your email",

@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-
 using Microsoft.AspNetCore.Identity.UI.Services;
-
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 
@@ -13,6 +12,8 @@ namespace Rent2Read.Web.Controllers
     public class SubscribersController(ApplicationDbContext _dbContext
                                             , IDataProtectionProvider provider
                                             , IMapper _mapper
+                                            , IEmailBody _emailBody
+                                            , IEmailSender _emailSender
                                             , IImageService _imageService) : Controller
     {
         private readonly IDataProtector _dataProtector = provider.CreateProtector("MySecureKey");
@@ -20,9 +21,9 @@ namespace Rent2Read.Web.Controllers
         #region Index
         public IActionResult Index()
         {
-         
-              return View();
-          }
+
+            return View();
+        }
         #endregion
         #region Search
         [HttpPost]
@@ -79,17 +80,31 @@ namespace Rent2Read.Web.Controllers
 
             Subscription subscription = new()
             {
-                            CreatedById=subscriber.CreatedById,
-                            CreatedOn=subscriber.CreatedOn,
-                            StartDate= DateTime.Today,
-                            EndDate= DateTime.Today.AddYears(1)
+                CreatedById = subscriber.CreatedById,
+                CreatedOn = subscriber.CreatedOn,
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddYears(1)
             };
             subscriber.Subscriptions.Add(subscription);
 
             _dbContext.Add(subscriber);
             _dbContext.SaveChanges();
 
-            //TODO: Send welcome email
+            //Send welcome email
+            var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/rent2read/image/upload/v1756315834/icon-positive-vote-2_jcxdww_toe0yr.svg" },
+                    { "header",$"Welcome {model.FirstName}," },
+                    { "body",  "thanks for joining Reant2Read 🤩" },
+
+                };
+            var body = _emailBody.GetEmailBody(EmailTemplates.Notification, placeholders);
+
+            //Schedules a background job to send an email asynchronously to the subscriber with the specified email
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
+                model.Email,
+                "Confirm your email",
+                body));
 
             var subscriberId = _dataProtector.Protect(subscriber.Id.ToString());
             return RedirectToAction(nameof(Details), new { id = subscriberId });
@@ -213,14 +228,28 @@ namespace Rent2Read.Web.Controllers
                 CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value,
                 CreatedOn = DateTime.Now,
                 StartDate = startDate,
-                EndDate   = startDate.AddYears(1)
+                EndDate = startDate.AddYears(1)
             };
 
             subscriber.Subscriptions.Add(newSubscription);
 
 
-            //TODO: Send Message email
-           
+
+            //Send Message email
+
+            var placeholders = new Dictionary<string, string>()
+            {
+                { "imageUrl", "https://res.cloudinary.com/rent2read/image/upload/v1756315834/icon-positive-vote-2_jcxdww_toe0yr.svg"  },
+                { "header", $"Hello {subscriber.FirstName}," },
+                { "body", $"your subscription has been renewed through {newSubscription.EndDate.ToString("d MMM, yyyy")} 🎉🎉" }
+            };
+
+            var body = _emailBody.GetEmailBody(EmailTemplates.Notification, placeholders);
+
+            BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(
+                     subscriber.Email,
+                     "Rent2Red Subscription Renewal",
+                     body));
 
             _dbContext.SaveChanges();
 
@@ -244,6 +273,8 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
+
+        #region PopulateViewModelFunc
         private SubscriberFormViewModel PopulateViewModel(SubscriberFormViewModel? model = null)
         {
             SubscriberFormViewModel viewModel = model is null ? new SubscriberFormViewModel() : model;
@@ -263,6 +294,7 @@ namespace Rent2Read.Web.Controllers
 
             return viewModel;
         }
+        #endregion
         #region Allowed
 
         public IActionResult AllowNationalId(SubscriberFormViewModel model)

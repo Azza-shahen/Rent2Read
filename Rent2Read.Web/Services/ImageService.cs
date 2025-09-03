@@ -1,5 +1,4 @@
-﻿using Rent2Read.Web.Core.Models;
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
 namespace Rent2Read.Web.Services
@@ -21,7 +20,7 @@ namespace Rent2Read.Web.Services
                 return (isUploaded: false, errorMessage: Errors.MaxSize);
 
             var path = Path.Combine($"{_webHostEnvironment.WebRootPath}{folderPath}", imageName);
-          // WebRootPath = This gives you the project's wwwroot folder (the place where I store images and files that you can access from the browser).
+            // WebRootPath = This gives you the project's wwwroot folder (the place where I store images and files that you can access from the browser).
 
             using var stream = File.Create(path);
             await image.CopyToAsync(stream);
@@ -53,15 +52,15 @@ namespace Rent2Read.Web.Services
 
             if (File.Exists(oldImagePath))
                 File.Delete(oldImagePath);
-            if (!string.IsNullOrEmpty(imageThumbnailPath)) 
+            if (!string.IsNullOrEmpty(imageThumbnailPath))
             {
                 var oldThumbPath = $"{_webHostEnvironment.WebRootPath}{imageThumbnailPath}";
 
                 if (File.Exists(oldThumbPath))
                     File.Delete(oldThumbPath);
             }
-           
-            
+
+
         }
 
     }

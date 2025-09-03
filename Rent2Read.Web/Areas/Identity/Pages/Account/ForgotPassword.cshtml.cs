@@ -2,18 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Rent2Read.Web.Core.Models;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Rent2Read.Web.Areas.Identity.Pages.Account
 {
@@ -73,14 +67,15 @@ namespace Rent2Read.Web.Areas.Identity.Pages.Account
                     values: new { area = "Identity", code },
                     protocol: Request.Scheme);
 
-
-                var body = _emailBody.GetEmailBody(
-            "https://res.cloudinary.com/rent2read/image/upload/v1756315834/icon-positive-vote-2_jcxdww_toe0yr.svg",
-                    $"Hey {user.FullName},",
-                    "Please click the below button to reset your password",
-                    $"{HtmlEncoder.Default.Encode(callbackUrl!)}",
-                    "Reset Password"
-            );
+                var placeholders = new Dictionary<string, string>()
+                {
+                    { "imageUrl", "https://res.cloudinary.com/rent2read/image/upload/v1756315834/icon-positive-vote-2_jcxdww_toe0yr.svg" },
+                    { "header", $"Hey {user.FullName}," },
+                    { "body", "please click the below button to reset you password" },
+                    { "url", $"{HtmlEncoder.Default.Encode(callbackUrl!)}" },
+                    { "linkTitle", "Reset Password" }
+                };
+                var body = _emailBody.GetEmailBody(EmailTemplates.Email, placeholders);
 
                 await _emailSender.SendEmailAsync(
                     Input.Email,

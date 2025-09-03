@@ -1,17 +1,19 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Hangfire;
+using Hangfire.Dashboard;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.EntityFrameworkCore;
+using Rent2Read.Web.Areas.Identity.Pages.Account;
+using Rent2Read.Web.BackgroundTasks;
 using Rent2Read.Web.Core.Mapping;
-using Rent2Read.Web.Data;
 using Rent2Read.Web.Helpers;
 using Rent2Read.Web.Seeds;
 
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 using WhatsAppCloudApi.Extensions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using WhatsAppCloudApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +35,8 @@ builder.Services.AddDataProtection().SetApplicationName(nameof(Rent2Read));
 /*builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();*/
 
-builder.Services.AddIdentity<ApplicationUser,IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-   //RequireConfirmedAccount = true → users must confirm their email before signing in
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+    //RequireConfirmedAccount = true → users must confirm their email before signing in
     .AddEntityFrameworkStores<ApplicationDbContext>()//store user/role data in the database
     .AddDefaultUI()// use the default Identity UI pages (Login, Register, ForgotPassword, etc.)
     .AddDefaultTokenProviders();//enable token generation for email confirmation, password reset, etc.
@@ -48,6 +50,22 @@ builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 //TimeSpan.Zero:Verified on every request.This means that any changes made to the user (such as lockout or password reset) will be applied immediately, without waiting.
 
 
+// Configure Hangfire to use SQL Server as storage for background jobs
+builder.Services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
+
+// Enable the Hangfire server that will execute the background jobs
+builder.Services.AddHangfireServer();
+builder.Services.Configure<AuthorizationOptions>(options =>
+    // Define a new authorization policy named "AdminOnly"
+    options.AddPolicy("AdminsOnly", policy =>
+    {
+        // Require that the user must be authenticated (logged in)
+        policy.RequireAuthenticatedUser();
+        // Require that the user must have the "Admin" role
+        policy.RequireRole(AppRoles.Admin);
+    })
+);
+
 builder.Services.Configure<IdentityOptions>(options =>
 {
     /*// Default Password settings.
@@ -58,20 +76,20 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 1;*/
     options.Password.RequiredLength = 8;
-  /*  options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
-    options.Lockout.MaxFailedAccessAttempts = 1;*/
-    // Default User settings.
-    /*  options.User.AllowedUserNameCharacters =
-              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";*/
+    /*  options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+      options.Lockout.MaxFailedAccessAttempts = 1;
+      Default User settings.
+       options.User.AllowedUserNameCharacters =
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";*/
     options.User.RequireUniqueEmail = false;
 });
 
 //It registers the ApplicationUserClaims.. n the Dependency Injection Container
 //so that ASP.NET Core Identity will use the Custom Factory I created instead of using the Default UserClaimsPrincipalFactory.
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, ApplicationUserClaimsPrincipalFactory>();
-builder.Services.AddTransient<IImageService, ImageService>();   
-builder.Services.AddTransient<IEmailSender, EmailSender>();   
-builder.Services.AddTransient<IEmailBody, EmailBody>();   
+builder.Services.AddTransient<IImageService, ImageService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddTransient<IEmailBody, EmailBody>();
 
 builder.Services.AddControllersWithViews();
 
@@ -82,8 +100,6 @@ builder.Services.AddExpressiveAnnotations();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 //link MailSettings class to the "MailSettings" section in the appsettings.json
-
-
 
 
 //builder.Services.AddAutoMapper(typeof(MappingProfile));//Registers only from the given type and nearby classes. Limited scope.
@@ -123,6 +139,40 @@ var userManager = scope.ServiceProvider.GetRequiredService<UserManager<Applicati
 
 await DefaultRoles.SeedRolesAsync(roleManager);
 await DefaultUsers.SeedAdminUserAsync(userManager);
+
+//Hangfire
+/*
+ * Enable Hangfire Dashboard at "/hangfire" to monitor
+ *and manage background jobs with custom title and set it to ReadOnly mode
+ *This allows monitoring background jobs without giving permissions to modify or delete them 
+ */
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "Rent2Read Dashboard",
+    IsReadOnlyFunc = (DashboardContext context) => true,
+    Authorization = new IDashboardAuthorizationFilter[]
+    {
+        new HangfireAuthorizationFilter("AdminsOnly")
+    }
+});
+// Register a recurring job with Hangfire to send subscription expiration alerts.
+// This job runs every day at 2:00 PM (local time) and calls the PrepareExpirationAlert method.
+var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+var emailBody = scope.ServiceProvider.GetRequiredService<IEmailBody>();
+var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+
+var hangfireTasks = new HangfireTasks(dbContext, emailBody, emailSender);
+RecurringJob.AddOrUpdate(
+    recurringJobId: "PrepareExpirationAlertJob",   // Unique ID for the recurring job
+    methodCall: () => hangfireTasks.PrepareExpirationAlert(),
+    cronExpression: "0 14 * * *",                  // Run every day at 14:00
+    options: new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Local             
+    });
+
+
+
 
 app.MapControllerRoute(
     name: "default",

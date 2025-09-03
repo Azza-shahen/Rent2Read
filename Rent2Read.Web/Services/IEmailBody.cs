@@ -2,7 +2,7 @@
 {
     public interface IEmailBody
     {
-        string GetEmailBody(string imageUrl, string header, string body, string url, string linkTitle);
+        public string GetEmailBody(string template, Dictionary<string, string> placeholders);
 
     }
 }

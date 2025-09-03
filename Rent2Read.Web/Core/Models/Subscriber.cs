@@ -31,7 +31,7 @@
 
         [MaxLength(length: 500)]
         public string Address { get; set; } = null!;
-        public bool IsBlackListed { get; set; } 
+        public bool IsBlackListed { get; set; }
 
         public int GovernorateId { get; set; }
         public Governorate? Governorate { get; set; }

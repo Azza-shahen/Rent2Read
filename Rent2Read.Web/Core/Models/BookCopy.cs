@@ -2,7 +2,7 @@
 {
     public class BookCopy : BaseModel
     {
-       
+
         public int BookId { get; set; }
         public Book? Book { get; set; }
         public bool IsAvailableForRental { get; set; }

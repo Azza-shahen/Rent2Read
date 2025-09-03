@@ -13,12 +13,12 @@ namespace Rent2Read.Web.Core.ViewModels
 
 
         [MaxLength(length: 20, ErrorMessage = Errors.MaxLength), Display(Name = "Username")]
-        [Remote("AllowUserName", null!,AdditionalFields ="Id",ErrorMessage = Errors.Duplicated)]
+        [Remote("AllowUserName", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
         [RegularExpression(RegexPatterns.Username, ErrorMessage = Errors.InvalidUsername)]
         public string UserName { get; set; } = null!;
 
 
-        [MaxLength(length: 200, ErrorMessage = Errors.MaxLength),EmailAddress]
+        [MaxLength(length: 200, ErrorMessage = Errors.MaxLength), EmailAddress]
         [Remote("AllowEmail", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
         public string Email { get; set; } = null!;
 

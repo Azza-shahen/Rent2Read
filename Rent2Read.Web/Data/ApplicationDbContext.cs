@@ -9,7 +9,7 @@ namespace Rent2Read.Web.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
 
-           
+
             // Define a sequence named "SerialNumber" in schema "shared" that starts at 1000001
             builder.HasSequence<int>("SerialNumber", schema: "shared")
                  .StartsAt(1000001);

@@ -1,6 +1,5 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
-using Rent2Read.Web.Core.Models;
 
 namespace Rent2Read.Web.Controllers
 {
@@ -61,7 +60,7 @@ namespace Rent2Read.Web.Controllers
             if (ModelState.IsValid)//Server Side Validation
             {
                 var category = _mapper.Map<Category>(model);
-               category.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                category.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
                 _dbContext/*.Categories*/.Add(category);
                 _dbContext.SaveChanges();
