@@ -3,6 +3,8 @@
     public class BookCopyViewModel
     {
         public int Id { get; set; }
+        public int BookId { get; set; }
+        public string? BookThumbnailUrl { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public bool IsDeleted { get; set; }

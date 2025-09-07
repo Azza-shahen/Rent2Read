@@ -19,6 +19,7 @@
         public DateTime CreatedOn { get; set; }
 
         public ICollection<SubscriptionViewModel> Subscriptions { get; set; } = new List<SubscriptionViewModel>();
+        public ICollection<RentalViewModel> Rentals { get; set; } = new List<RentalViewModel>();
 
     }
 }

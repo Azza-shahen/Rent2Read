@@ -40,5 +40,7 @@
         public Area? Area { get; set; }
 
         public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+        public ICollection<Rental> Rentals { get; set; } = new List<Rental>();//Subscriber → Rentals is a One-to-Many relationship.
+
     }
 }

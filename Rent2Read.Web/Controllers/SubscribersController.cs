@@ -122,6 +122,8 @@ namespace Rent2Read.Web.Controllers
                 .Include(s => s.Governorate)
                 .Include(s => s.Area)
                 .Include(s => s.Subscriptions)
+                .Include(s => s.Rentals)
+                .ThenInclude(r=>r.RentalCopies)
                 .SingleOrDefault(s => s.Id == subsciberId);
 
             if (subscriber is null)

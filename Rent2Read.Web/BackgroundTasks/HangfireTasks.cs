@@ -13,7 +13,7 @@ namespace Rent2Read.Web.BackgroundTasks
             // Get all subscribers whose latest subscription expires in 5 days
             var subscribers = _dbContext.Subscribers
                 .Include(s => s.Subscriptions)
-                .Where(s => s.Subscriptions.OrderByDescending(x => x.EndDate).First().EndDate == DateTime.Today.AddDays(5))
+                .Where(s =>!s.IsBlackListed && s.Subscriptions.OrderByDescending(x => x.EndDate).First().EndDate == DateTime.Today.AddDays(5))
                 .ToList();
 
             foreach (var subscriber in subscribers)
