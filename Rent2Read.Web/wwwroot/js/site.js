@@ -48,11 +48,15 @@ function onModalBegin() {
       KTMenu.initHandlers()
 }
 
-function disableSubmitButton() {
-    $(this).find('button[type="submit"]').prop('disabled', false).removeAttr('data-kt-indicator');
+function disableSubmitButton(btn) {
+    $(btn).attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
+}
+
+function onModalBegin() {
+    disableSubmitButton($('#Modal').find(':submit'));
 }
 function onModalComplete() {
-    disableSubmitButton();
+    $('body :submit').removeAttr('disabled').removeAttr('data-kt-indicator');
 }
 
 //Select2
@@ -188,7 +192,7 @@ $(function () {
             });
         }
         var isValid = $(this).valid();
-        if (isValid) disableSubmitButton();
+        if (isValid) disableSubmitButton($(this).find(':submit')); 
     });
     //TinyMCE
     // Initialize TinyMCE rich text editor for elements with class ".js-tinymce"

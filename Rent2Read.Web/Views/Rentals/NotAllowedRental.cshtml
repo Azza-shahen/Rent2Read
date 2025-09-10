@@ -1,0 +1,13 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Not Allowed Rental";
+}
+
+<div class="container mt-10">
+    <div class="alert alert-warning text-center shadow rounded p-4 d-flex flex-column text-center align-items-center">
+        <img src="~/assets/images/stop.svg" alt="stop" class="mw-300px" />
+        <h1 class="display-6 text-danger fw-bold">@ViewData["Title"] !!</h1>
+        <h6 class="lead mt-3 text-danger">@Model</h6>
+       
+    </div>
+</div>
