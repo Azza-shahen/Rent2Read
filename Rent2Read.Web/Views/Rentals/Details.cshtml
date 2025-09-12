@@ -1,0 +1,127 @@
+﻿@model RentalViewModel
+
+@{
+    ViewData["Title"] = "Rental Details";
+}
+
+<div class="alert bg-light-primary border border-primary border-3 border-dashed d-flex justify-content-between w-100 p-5 mb-10">
+    <div class="d-flex align-items-center">
+        <div class="symbol symbol-40px me-4">
+            <div class="symbol-label fs-2 fw-semibold text-success">
+                <!--begin::Svg Icon | path: icons/duotune/general/gen002.svg-->
+                <span class="svg-icon svg-icon-2 svg-icon-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journals" viewBox="0 0 16 16">
+                        <path d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2" />
+                        <path d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0" />
+                    </svg>
+                </span>
+                <!--end::Svg Icon-->
+            </div>
+        </div>
+        <!--begin::Content-->
+        <div class="d-flex flex-column pe-0 pe-sm-10">
+            <h5 class="mb-1">Rental Details</h5>
+        </div>
+        <!--end::Content-->
+    </div>
+    @if (Model.CreatedOn.Date == DateTime.Today)
+    {
+        <div>
+            <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@Model.Id">
+                <i class="bi bi-pencil-square"></i>Edit
+            </a>
+        </div>
+    }
+</div>
+
+<div class="card pt-4 mb-6 mb-xl-9">
+    <!--begin::Card header-->
+    <div class="card-header border-0 pt-5">
+        <h3 class="card-title align-items-start flex-column">
+            <span class="card-label fw-bold fs-3 mb-1">Books</span>
+        </h3>
+    </div>
+    <!--end::Card header-->
+    <!--begin::Card body-->
+    <div class="card-body pt-0 pb-5">
+        <div class="alert bg-light-info border border-info border-3 border-dashed d-flex flex-column flex-sm-row w-100 p-5 mt-10" style="display: none !important" id="Alert">
+            <!--begin::Icon-->
+            <!--begin::Svg Icon | path: icons/duotune/general/gen007.svg-->
+            <span class="svg-icon svg-icon-2hx svg-icon-info me-4 mb-5 mb-sm-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path opacity="0.3" d="M12 22C13.6569 22 15 20.6569 15 19C15 17.3431 13.6569 16 12 16C10.3431 16 9 17.3431 9 19C9 20.6569 10.3431 22 12 22Z" fill="currentColor"></path>
+                    <path d="M19 15V18C19 18.6 18.6 19 18 19H6C5.4 19 5 18.6 5 18V15C6.1 15 7 14.1 7 13V10C7 7.6 8.7 5.6 11 5.1V3C11 2.4 11.4 2 12 2C12.6 2 13 2.4 13 3V5.1C15.3 5.6 17 7.6 17 10V13C17 14.1 17.9 15 19 15ZM11 10C11 9.4 11.4 9 12 9C12.6 9 13 8.6 13 8C13 7.4 12.6 7 12 7C10.3 7 9 8.3 9 10C9 10.6 9.4 11 10 11C10.6 11 11 10.6 11 10Z" fill="currentColor"></path>
+                </svg>
+            </span>
+            <!--end::Svg Icon-->
+            <!--end::Icon-->
+            <!--begin::Content-->
+            <div class="d-flex flex-column pe-0 pe-sm-10 justify-content-center">
+                <h5 class="mb-0">This subscriber has no rentals yet.</h5>
+            </div>
+            <!--end::Content-->
+        </div>
+
+        <div class="table-responsive " id="Table">
+            <!--begin::Table-->
+            <table class="table align-middle gs-0 gy-4">
+                <!--begin::Table head-->
+                <thead>
+                    <tr class="fw-bold text-muted bg-light">
+                        <th class="ps-4 min-w-125px rounded-start">Book</th>
+                        <th class="min-w-125px">Start Date</th>
+                        <th class="min-w-125px">End Date</th>
+                        <th class="min-w-150px">Total Delay (Days)</th>
+                        <th class="min-w-150px">Extend Date</th>
+                        <th class="min-w-150px">Return Date</th>
+                    </tr>
+                </thead>
+                <!--end::Table head-->
+                <!--begin::Table body-->
+                <tbody>
+                    @foreach (var copy in Model.RentalCopies)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center ps-3">
+                                    <!--begin::Symbol-->
+                                    <div class="symbol symbol-40px me-5">
+                                        <img src="@copy.BookCopy?.BookThumbnailUrl" class="h-50 align-self-center" alt="@copy.BookCopy?.BookTitle">
+                                    </div>
+                                    <!--end::Symbol-->
+                                    <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                                        <!--begin:Author-->
+                                        <div class="flex-grow-1 me-2">
+                                            <h4 class="text-gray-800 text-hover-primary fs-6 fw-bold">@copy.BookCopy?.BookTitle</h4>
+                                            <span class="text-muted fw-semibold d-block fs-7">Edition# @copy.BookCopy?.EditionNumber</span>
+                                        </div>
+                                        <!--end:Author-->
+                                    </div>
+                                    <!--end::Section-->
+                                </div>
+                            </td>
+                            <td>
+                                @copy.RentalDate.ToString("d MMM, yyyy")
+                            </td>
+                            <td>
+                                @copy.EndDate.ToString("d MMM, yyyy")
+                            </td>
+                            <td class="@(copy.DelayInDays > 0 ? "text-danger" : string.Empty)">
+                                @copy.DelayInDays @((copy.DelayInDays == 1) ? "day" : "days")
+                            </td>
+                            <td class="text-end pe-4">
+                                @copy.ExtendedOn?.ToString("d MMM, yyyy")
+                            </td>
+                            <td class="text-end pe-4">
+                                @copy.ReturnDate?.ToString("d MMM, yyyy")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <!--end::Table body-->
+            </table>
+            <!--end::Table-->
+        </div>
+    </div>
+    <!--end::Card body-->
+</div>

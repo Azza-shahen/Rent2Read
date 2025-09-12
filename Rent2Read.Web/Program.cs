@@ -149,7 +149,7 @@ await DefaultUsers.SeedAdminUserAsync(userManager);
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     DashboardTitle = "Rent2Read Dashboard",
-    IsReadOnlyFunc = (DashboardContext context) => true,
+    //IsReadOnlyFunc = (DashboardContext context) => true,
     Authorization = new IDashboardAuthorizationFilter[]
     {
         new HangfireAuthorizationFilter("AdminsOnly")
@@ -170,6 +170,18 @@ RecurringJob.AddOrUpdate(
     {
         TimeZone = TimeZoneInfo.Local             
     });
+
+RecurringJob.AddOrUpdate(
+    recurringJobId: "RentalsExpirationAlertJob",
+    methodCall: () => hangfireTasks.RentalsExpirationAlert(),
+    cronExpression: "0 14 * * *",              
+    options: new RecurringJobOptions
+    {
+        TimeZone = TimeZoneInfo.Local             
+    });
+
+
+
 
 
 

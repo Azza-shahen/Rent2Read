@@ -4,7 +4,7 @@
  * https://jqueryvalidation.org/
  *
  * Copyright (c) 2022 Jörn Zaefferer
- * Released under the MIT license
+ * Released under sthe MIT license
  */
 (function( factory ) {
 	if ( typeof define === "function" && define.amd ) {

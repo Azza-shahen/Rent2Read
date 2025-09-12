@@ -83,6 +83,7 @@ namespace Rent2Read.Web.Controllers
             return Ok(jsonData);
         }
 
+
         #endregion
         #region Details
         public IActionResult Details(int id)

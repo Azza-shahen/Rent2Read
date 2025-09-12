@@ -1,6 +1,14 @@
-﻿var selectedCopies = [];  // Array to hold selected copies (Serial + BookId) on the client side
+﻿var currentCopies = [];
+var selectedCopies = [];  // Array to hold selected copies (Serial + BookId) on the client side
+var isEditMode = false;
 
 $(document).ready(function () {
+
+    if ($('.js-copy').length > 0) {
+        prepareInputs();
+        currentCopies = selectedCopies;
+        isEditMode = true;
+    }
     // Handle click on search button
     $('.js-search').on('click', function (e) {
         e.preventDefault(); // Prevent default form submission or link behavior
@@ -23,13 +31,45 @@ $(document).ready(function () {
         $('#SearchForm').submit();
     });
 
-        $('body').delegate('.js-remove', 'click', function () {
-            $(this).parents('.js-copy-container').remove();
-            prepareInput();
+    $('body').delegate('.js-remove', 'click', function () {
 
-            if (selectedCopies.length == 0)
-                $('#CopiesForm').find(':submit').addClass('d-none');
-        });
+            var btn = $(this);
+            var container = btn.parents('.js-copy-container');
+
+        if (isEditMode) {
+            btn.toggleClass('btn-light-danger btn-light-success js-remove js-readd').text('Re-Add');// Toggle the button style and text: Remove → Re-Add
+            container.find('img').css('opacity', '0.5');// Make the book image look faded
+            container.find('h4').css('text-decoration', 'line-through');// Add a strike-through on the book title
+            container.find('.js-copy').toggleClass('js-copy js-removed').removeAttr('name').removeAttr('id'); // Change the copy from "active" to "removed"
+            // and remove 'name' and 'id' so it's not sent with the form
+        }
+        else {
+                container.remove();
+        }
+       prepareInputs();
+
+        if ($.isEmptyObject(selectedCopies) || JSON.stringify(currentCopies) == JSON.stringify(selectedCopies))
+            $('#CopiesForm').find(':submit').addClass('d-none');
+        else
+            $('#CopiesForm').find(':submit').removeClass('d-none');
+    });
+
+    $('body').delegate('.js-readd', 'click', function () {
+        var btn = $(this);
+        var container = btn.parents('.js-copy-container');
+
+        btn.toggleClass('btn-light-danger btn-light-success js-remove js-readd').text('Remove');
+        container.find('img').css('opacity', '1');
+        container.find('h4').css('text-decoration', 'none');
+        container.find('.js-removed').toggleClass('js-copy js-removed');
+
+        prepareInputs();
+
+        if (JSON.stringify(currentCopies) == JSON.stringify(selectedCopies))
+            $('#CopiesForm').find(':submit').addClass('d-none');
+        else
+            $('#CopiesForm').find(':submit').removeClass('d-none');
+    });
 });
 
 function onAddCopySuccess(copy) {
@@ -49,10 +89,10 @@ function onAddCopySuccess(copy) {
     $('#CopiesForm').prepend(copy);
     $('#CopiesForm').find(':submit').removeClass('d-none');
     
-    prepareInput();
+    prepareInputs();
 }
 
-function prepareInput() {
+function prepareInputs() {
     // Get all current copies from the DOM
     var copies = $('.js-copy');
 

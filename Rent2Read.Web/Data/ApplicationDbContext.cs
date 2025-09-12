@@ -21,6 +21,10 @@ namespace Rent2Read.Web.Data
             builder.Entity<BookCategory>().HasKey(e => new { e.BookId, e.CategoryId });//Composite Key
             builder.Entity<RentalCopy>().HasKey(e => new { e.RentalId, e.BookCopyId });//Composite Key
 
+            // Apply global query filter: exclude Rentals that are marked as deleted
+            builder.Entity<Rental>().HasQueryFilter(e => !e.IsDeleted);
+            builder.Entity<RentalCopy>().HasQueryFilter(e => !e.Rental!.IsDeleted);//exclude RentalCopies that belong to a deleted Rental
+
             base.OnModelCreating(builder);
 
             var cascadeFKs = builder.Model.GetEntityTypes()//It brings all the entities that are created in the model.

@@ -94,7 +94,7 @@ $.each(headers, function (i) {
 var KTDatatables = function () {
     // Private functions
     var initDatatable = function () {
-        // Init datatable --- more info on datatables: https://datatables.net/manual/
+        // Init datatable 
         datatable = $(table).DataTable({
             "info": false,
             'pageLength': 10,
@@ -103,6 +103,7 @@ var KTDatatables = function () {
             }
         });
     }
+  
 
     // Hook export buttons
     var exportButtons = () => {
@@ -235,11 +236,10 @@ $(function () {
     if (message !== '') {
         showSuccessMessage(message);
     }
-
     //DataTables
-    KTUtil.onDOMContentLoaded(function () {
+  /*  KTUtil.onDOMContentLoaded(function () {
         KTDatatables.init();
-    });
+    });*/
 
     //handel bootstrap Modal
     $('body').on('click', '.js-render-modal', function () {//When any element with the class js-toggle-status is clicked, execute the function.
