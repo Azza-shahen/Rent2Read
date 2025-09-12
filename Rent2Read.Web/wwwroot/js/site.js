@@ -163,7 +163,6 @@ var KTDatatables = function () {
             datatable.search(e.target.value).draw();
         });
     }
-
     // Public methods
     return {
         init: function () {
