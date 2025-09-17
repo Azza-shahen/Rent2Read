@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Rent2Read.Web.Controllers
 {
@@ -54,7 +55,21 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
+        #region RentalHistory
+        public IActionResult RentalHistory(int id)
+        {
+            var copyHistory = _dbContext.RentalCopies
+                .Include(c => c.Rental)
+                .ThenInclude(r => r!.Subscriber)
+                .Where(c => c.BookCopyId == id)
+                .OrderByDescending(c => c.RentalDate)
+                .ToList();
 
+            var viewModel = _mapper.Map<IEnumerable<CopyHistoryViewModel>>(copyHistory);
+
+            return View(viewModel);
+        } 
+        #endregion
 
         #region Edit
         [HttpGet]

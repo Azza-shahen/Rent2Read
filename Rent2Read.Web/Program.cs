@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Rent2Read.Web.Areas.Identity.Pages.Account;
 using Rent2Read.Web.BackgroundTasks;
 using Rent2Read.Web.Core.Mapping;
 using Rent2Read.Web.Helpers;
@@ -13,7 +12,6 @@ using Rent2Read.Web.Seeds;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 using WhatsAppCloudApi.Extensions;
-using WhatsAppCloudApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -168,16 +166,16 @@ RecurringJob.AddOrUpdate(
     cronExpression: "0 14 * * *",                  // Run every day at 14:00
     options: new RecurringJobOptions
     {
-        TimeZone = TimeZoneInfo.Local             
+        TimeZone = TimeZoneInfo.Local
     });
 
 RecurringJob.AddOrUpdate(
     recurringJobId: "RentalsExpirationAlertJob",
     methodCall: () => hangfireTasks.RentalsExpirationAlert(),
-    cronExpression: "0 14 * * *",              
+    cronExpression: "0 14 * * *",
     options: new RecurringJobOptions
     {
-        TimeZone = TimeZoneInfo.Local             
+        TimeZone = TimeZoneInfo.Local
     });
 
 

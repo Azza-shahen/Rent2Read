@@ -1,8 +1,8 @@
 ﻿global using AutoMapper;
-global using Rent2Read.Web.Core.Enums;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Rent2Read.Web.Core.Consts;
+global using Rent2Read.Web.Core.Enums;
 global using Rent2Read.Web.Core.Models;
 global using Rent2Read.Web.Core.ViewModels;
 global using Rent2Read.Web.Data;

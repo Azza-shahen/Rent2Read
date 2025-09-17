@@ -27,5 +27,9 @@
         public const string InactiveSubscriber = "This subscriber is inactive.";
         public const string MaxCopiesReached = "Maximum rental limit reached. No more copies can be added.";
         public const string CopyIsInRental = "This copy is already rentaled.";
+        public const string RentalNotAllowedForBlackListed = "Rental cannot be extended for blacklisted subscribers.";
+        public const string RentalNotAllowedForInactive = "Rental cannot be extended for this subscriber before renewal.";
+        public const string ExtendNotAllowed = "Rental cannot be extended.";
+        public const string PenaltyShouldBePaid = "Penalty should be paid.";
     }
 }
