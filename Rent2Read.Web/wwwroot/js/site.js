@@ -209,7 +209,7 @@ $(function () {
     //select2
     applySelect2();
     //Datepicker
-/*
+
     $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
@@ -218,18 +218,8 @@ $(function () {
  
         }
 
-    );*/
-   // Datepicker
-    $('.js-datepicker').daterangepicker({
-        singleDatePicker: true,
-        autoApply: true,
-        drops: 'up',
-        maxDate: moment().endOf('day'),
-        locale: {
-            format: 'DD/MM/YYYY'
-        }
-    });
-
+    );
+  
 
     //Sweet Alert
     var message = $('#Message').text().trim();

@@ -17,7 +17,7 @@ namespace Rent2Read.Web.Core.ViewModels
         public string LastName { get; set; } = null!;
 
         [Display(Name = "Date Of Birth")]
-        // [AssertThat("DateOfBirth <= Today()", ErrorMessage = Errors.NotAllowFutureDates)]
+        [AssertThat("DateOfBirth <= Today()", ErrorMessage = Errors.NotAllowFutureDates)]
         public DateTime DateOfBirth { get; set; } = DateTime.Now;
 
         [MaxLength(14), Display(Name = "National ID"),
@@ -36,7 +36,7 @@ namespace Rent2Read.Web.Core.ViewModels
         [Remote("AllowEmail", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string Email { get; set; } = null!;
 
-        [RequiredIf("Key == ''", ErrorMessage = Errors.EmptyImage)]
+        [RequiredIf(" Key == ''", ErrorMessage = Errors.EmptyImage)]
         public IFormFile? Image { get; set; }
 
         [Display(Name = "Area")]

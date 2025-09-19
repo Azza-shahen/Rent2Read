@@ -10,10 +10,9 @@
     </div>
     <div class="card-body">
         <form method="post" asp-controller="Subscribers" enctype="multipart/form-data" id="Form">
-            @if (!string.IsNullOrEmpty(Model.Key))
-            {
+           
                 <input type="hidden" asp-for="Key" />
-            }
+            
             <div class="row mb-6">
                 <label class="col-lg-4 col-form-label fw-semibold fs-6" asp-for="Image"></label>
                 <div class="col-lg-8">
