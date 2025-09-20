@@ -113,7 +113,7 @@ namespace Rent2Read.Web.Controllers
         #endregion
 
         #region Details
-        public IActionResult Details(string id)
+        public IActionResult Details(string? id)
         {
             var subsciberId = int.Parse(_dataProtector.Unprotect(id));
             // Unprotect(decrypt) the encrypted subscriber Id (restore the original Id as integer)

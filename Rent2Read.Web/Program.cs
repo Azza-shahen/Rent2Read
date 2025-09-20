@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.Dashboard;
+using HashidsNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -28,6 +29,7 @@ builder.Services.AddWhatsAppApiClient(builder.Configuration);
 // Enable ASP.NET Core Data Protection (used for encrypting cookies, TempData, etc.)
 // Set a unique ApplicationName = "Rent2Read" to avoid key conflicts when sharing the same key storage
 builder.Services.AddDataProtection().SetApplicationName(nameof(Rent2Read));
+builder.Services.AddSingleton<IHashids>(_ => new Hashids("f1nd1ngn3m0", minHashLength: 11));
 
 
 /*builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
