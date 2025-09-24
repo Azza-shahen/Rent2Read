@@ -31,5 +31,7 @@
         public const string RentalNotAllowedForInactive = "Rental cannot be extended for this subscriber before renewal.";
         public const string ExtendNotAllowed = "Rental cannot be extended.";
         public const string PenaltyShouldBePaid = "Penalty should be paid.";
+        public const string InvalidStartDate = "The start date is invalid.";
+        public const string InvalidEndDate = "The end date is invalid.";
     }
 }

@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Rent2Read.Web.Controllers
 {
@@ -90,7 +88,7 @@ namespace Rent2Read.Web.Controllers
             // Create a new list to include all days, even if no rentals happened
             List<ChartItemViewModel> figures = new();
 
-            
+
             for (var day = startDate; day <= endDate; day = day.Value.AddDays(1))
             {
                 // Find the data for this day if it exists, otherwise null

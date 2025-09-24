@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace Rent2Read.Web.Controllers
 {
@@ -68,7 +67,7 @@ namespace Rent2Read.Web.Controllers
             var viewModel = _mapper.Map<IEnumerable<CopyHistoryViewModel>>(copyHistory);
 
             return View(viewModel);
-        } 
+        }
         #endregion
 
         #region Edit

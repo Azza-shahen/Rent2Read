@@ -1,7 +1,5 @@
 ﻿using HashidsNet;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Rent2Read.Web.Controllers
 {
@@ -21,14 +19,14 @@ namespace Rent2Read.Web.Controllers
         #region Find
         public IActionResult Find(string query)
         {
-            var books= _dbContext.Books
+            var books = _dbContext.Books
                 .Include(b => b.Author)
                 .Where(b => !b.IsDeleted && (b.Title.Contains(query) || b.Author!.Name.Contains(query)))
                 .Select(b => new { b.Title, Author = b.Author!.Name, Key = _dataProtector.Protect(b.Id.ToString())/* Key = _hashids.EncodeHex(b.Id.ToString())*/ })
                 .ToList();
 
             return Ok(books);
-        } 
+        }
         #endregion
 
         #region Details

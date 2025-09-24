@@ -12,6 +12,7 @@ using Rent2Read.Web.Seeds;
 
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
+using ViewToHTML.Extensions;
 using WhatsAppCloudApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddWhatsAppApiClient(builder.Configuration);
 
+builder.Services.AddViewToHTML();
 
 // Enable ASP.NET Core Data Protection (used for encrypting cookies, TempData, etc.)
 // Set a unique ApplicationName = "Rent2Read" to avoid key conflicts when sharing the same key storage

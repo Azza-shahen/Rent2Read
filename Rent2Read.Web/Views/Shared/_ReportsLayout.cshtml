@@ -1,0 +1,60 @@
+﻿@using System.Drawing;@* library to work with images *@
+
+@inject IWebHostEnvironment webHostEnvironment;
+@* to access the web root path of the project (wwwroot). *@
+
+
+@{
+    using Image image = Image.FromFile($"{webHostEnvironment.WebRootPath}/assets/images/Logo_sm.png");
+
+    using MemoryStream ms = new MemoryStream();
+
+    // Save the image into the memory stream using its original format (PNG, JPG)
+    image.Save(ms, image.RawFormat);
+
+    // Convert the memory stream (bytes of the image) into a Base64 string
+    var imageSrc = Convert.ToBase64String(ms.ToArray());
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #data {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+        }
+
+        #data td, #data th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #data tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #data th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #000;
+            color: white;
+        }
+
+        #Logo {
+            width: 180px;
+            height: auto;
+            margin: 0 auto 15px auto; 
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <img src="data:image/png;base64,@imageSrc" id="Logo" alt="Logo" />@* data:image/png;base64, → tells the browser that what follows is a Base64 encoded PNG image. *@
+    @RenderBody()
+</body>
+</html>

@@ -1,20 +1,19 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-// Write your JavaScript code.
-var updatedRow;
-var table;
+﻿var table;
 var datatable;
+var updatedRow;
 var exportedCols = [];
+
 function showSuccessMessage(message = 'Saved successfully!') {
     Swal.fire({
         icon: 'success',
-        title: 'Success',
+        title: 'Good Job',
         text: message,
         customClass: {
             confirmButton: "btn btn-primary"
         }
     });
 }
+
 function showErrorMessage(message = 'Something went wrong!') {
     Swal.fire({
         icon: 'error',
@@ -26,35 +25,30 @@ function showErrorMessage(message = 'Something went wrong!') {
     });
 }
 
-function onModalBegin() {
-    $(this).find('button[type="submit"]').prop('disabled', true).attr('data-kt-indicator','on');
-    /*goal is to prevent the button that submitted from being pressed 
-    again during processing(so the user can't press morthan once).
-    */
-}
-  function onModalSuccess(row) {
-        showSuccessMessage();
-        $('#Modal').modal('hide');
-
-        if (updatedRow !== undefined) {
-            datatable.row(updatedRow).remove().draw();
-            updatedRow = undefined;
-        }
-
-        var newRow = $(row);
-        datatable.row.add(newRow).draw();
-
-        KTMenu.init();
-      KTMenu.initHandlers()
-}
-
 function disableSubmitButton(btn) {
     $(btn).attr('disabled', 'disabled').attr('data-kt-indicator', 'on');
 }
 
 function onModalBegin() {
     disableSubmitButton($('#Modal').find(':submit'));
+    /*goal is to prevent the button that submitted from being pressed
+   again during processing(so the user can't press morthan once).
+   */
 }
+
+function onModalSuccess(row) {
+    showSuccessMessage();
+    $('#Modal').modal('hide');
+
+    if (updatedRow !== undefined) {
+        datatable.row(updatedRow).remove().draw();
+        updatedRow = undefined;
+    }
+
+    var newRow = $(row);
+    datatable.row.add(newRow).draw();
+}
+
 function onModalComplete() {
     $('body :submit').removeAttr('disabled').removeAttr('data-kt-indicator');
 }
@@ -63,13 +57,11 @@ function onModalComplete() {
 function applySelect2() {
     $('.js-select2').select2();
     $('.js-select2').on('select2:select', function (e) {
-        var select = $(this);
-        $('form').not('#SignOut').validate().element('#' + select.attr('id'));
+        $('form').not('#SignOut').validate().element('#' + $(this).attr('id'));
     });
 }
 
-
-//Data Tables
+//DataTables
 /*  uses jQuery with the DataTables library to make any HTML table interactive.
            It adds features like:
           -Search box
@@ -79,31 +71,28 @@ function applySelect2() {
             $('table') selects all tables in the page.
            .DataTable() activates the DataTables plugin on them.
  */
-
-
-//Building array(exportedCols) of the indexes of all table columns that should be exported, 
+//Building array(exportedCols) of the indexes of all table columns that should be exported,
 //ignoring columns marked with .js - no -export.
-
 
 var headers = $('th');
 $.each(headers, function (i) {
     if (!$(this).hasClass('js-no-export'))
         exportedCols.push(i);
 });
+
 // Class definition
 var KTDatatables = function () {
     // Private functions
     var initDatatable = function () {
-        // Init datatable 
+        // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
-            "info": false,
+            'info': false,
             'pageLength': 10,
             'drawCallback': function () {
                 KTMenu.createInstances();
             }
         });
     }
-  
 
     // Hook export buttons
     var exportButtons = () => {
@@ -136,6 +125,17 @@ var KTDatatables = function () {
                     title: documentTitle,
                     exportOptions: {
                         columns: exportedCols
+                    },
+                    customize: function (doc) {
+                        pdfMake.fonts = {
+                            Arial: {
+                                normal: 'arial',
+                                bold: 'arial',
+                                italics: 'arial',
+                                bolditalics: 'arial'
+                            }
+                        }
+                        doc.defaultStyle.font = 'Arial';
                     }
                 }
             ]
@@ -164,6 +164,7 @@ var KTDatatables = function () {
             datatable.search(e.target.value).draw();
         });
     }
+
     // Public methods
     return {
         init: function () {
@@ -180,72 +181,71 @@ var KTDatatables = function () {
     };
 }();
 
-$(function () {
-
+$(document).ready(function () {
     //Disable submit button
-    $('form').not('#SignOut').on('submit', function () {
+    $('form').not('#SignOut').not('.js-excluded-validation').on('submit', function () {
         if ($('.js-tinymce').length > 0) {
             $('.js-tinymce').each(function () {
                 var input = $(this);
-                var content = tinyMCE.get(input.atrr('id')).getContent();
+
+                var content = tinyMCE.get(input.attr('id')).getContent();
                 input.val(content);
             });
         }
+
         var isValid = $(this).valid();
-        if (isValid) disableSubmitButton($(this).find(':submit')); 
+        if (isValid) disableSubmitButton($(this).find(':submit'));
     });
+
     //TinyMCE
     // Initialize TinyMCE rich text editor for elements with class ".js-tinymce"
-    if ($('.js-tinymce').length >0)
-    {
-        var options = { selector: ".js-tinymce", height: "447" };
+    if ($('.js-tinymce').length > 0) {
+        var options = { selector: ".js-tinymce", height: "430" };
 
         if (KTThemeMode.getMode() === "dark") {
             options["skin"] = "oxide-dark";
             options["content_css"] = "dark";
         }
+
         tinymce.init(options);
     }
-    //select2
-    applySelect2();
-    //Datepicker
 
+    //Select2
+    applySelect2();
+
+    //Datepicker
     $('.js-datepicker').daterangepicker({
         singleDatePicker: true,
         autoApply: true,
         drops: 'up',
-      maxDate: new Date(),
- 
-        }
+        maxDate: new Date()
+    });
 
-    );
-  
-
-    //Sweet Alert
-    var message = $('#Message').text().trim();
+    //SweetAlert
+    var message = $('#Message').text();
     if (message !== '') {
         showSuccessMessage(message);
     }
+
     //DataTables
-  /*  KTUtil.onDOMContentLoaded(function () {
+    KTUtil.onDOMContentLoaded(function () {
         KTDatatables.init();
-    });*/
+    });
 
-    //handel bootstrap Modal
-    $('body').on('click', '.js-render-modal', function () {//When any element with the class js-toggle-status is clicked, execute the function.
+    //Handle bootstrap modal
+    $('body').delegate('.js-render-modal', 'click', function () {
+        var btn = $(this);
+        var modal = $('#Modal');
 
-        var btn = $(this);//The element that was clicked (the button) is stored in the btn variable.
-        var modal = $('#Modal');//Holds the element whose ID is Modal
         modal.find('#ModalLabel').text(btn.data('title'));
 
         if (btn.data('update') !== undefined) {
             updatedRow = btn.parents('tr');
-
         }
 
         $.get({
-            url: btn.data('url')
-            , success: function (form) {
+            url: btn.data('url'),
+            success: function (form) {
                 modal.find('.modal-body').html(form);
                 $.validator.unobtrusive.parse(modal);
                 applySelect2();
@@ -254,13 +254,15 @@ $(function () {
                 showErrorMessage();
             }
         });
+
         modal.modal('show');
     });
 
-/*     jQuery Script => Its task is to change the status of Category element between 
-Available and Deleted without reloading the page(AJAX). */
     //Handle Toggle Status
-    $('body').on('click', '.js-toggle-status', function () {// Wait until the page is ready.
+    /*     jQuery Script => Its task is to change the status of Category element between
+Available and Deleted without reloading the page(AJAX). */
+
+    $('body').delegate('.js-toggle-status', 'click', function () {// Wait until the page is ready.
         var btn = $(this);
 
         bootbox.confirm({
@@ -278,7 +280,7 @@ Available and Deleted without reloading the page(AJAX). */
             callback: function (result) {
                 if (result) {
                     $.post({//Makes a POST request to the server.
-                        url: btn.data('url'),//It takes the id from the data-id in the button.
+                        url: btn.data('url'),
                         data: {
                             '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
                         },
@@ -304,7 +306,6 @@ Available and Deleted without reloading the page(AJAX). */
             }
         });
     });
-
 
     //Handle Confirm
     $('body').delegate('.js-confirm', 'click', function () {
@@ -340,7 +341,6 @@ Available and Deleted without reloading the page(AJAX). */
             }
         });
     });
-
 
     //Hanlde signout
     $('.js-signout').on('click', function () {

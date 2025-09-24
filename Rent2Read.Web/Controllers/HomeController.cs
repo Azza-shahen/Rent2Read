@@ -1,8 +1,4 @@
-using HashidsNet;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.DotNet.Scaffolding.Shared;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 
@@ -18,7 +14,7 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult Index()
         {
-            if(User.Identity!.IsAuthenticated)//If the user is authenticated (logged in)
+            if (User.Identity!.IsAuthenticated)//If the user is authenticated (logged in)
                 return RedirectToAction(nameof(Index), "Dashboard");
 
             // Get the last 10 books added(10 newest books)
@@ -32,12 +28,12 @@ namespace Rent2Read.Web.Controllers
             var viewModel = _mapper.Map<IEnumerable<BookViewModel>>(lastAddedBooks);
 
             foreach (var book in viewModel)
-               // book.Key = _hashids.EncodeHex(book.Id.ToString());
+                // book.Key = _hashids.EncodeHex(book.Id.ToString());
                 book.Key = _dataProtector.Protect(book.Id.ToString());
 
             return View(viewModel);
         }
-         
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

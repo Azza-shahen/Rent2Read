@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.EntityFrameworkCore;
 
 namespace Rent2Read.Web.Controllers
 {
@@ -215,11 +214,11 @@ namespace Rent2Read.Web.Controllers
                 Copies = _mapper.Map<IList<RentalCopyViewModel>>(rental.RentalCopies.Where(c => !c.ReturnDate.HasValue).ToList()),
                 SelectedCopies = rental.RentalCopies.Where(c => !c.ReturnDate.HasValue).Select(c => new ReturnCopyViewModel { Id = c.BookCopyId, IsReturned = c.ExtendedOn.HasValue ? false : null }).ToList(),
 
-                AllowExtend =!subscriber!.IsBlackListed//Subscriber must not be blacklisted
+                AllowExtend = !subscriber!.IsBlackListed//Subscriber must not be blacklisted
                              && subscriber.Subscriptions.Last().EndDate >= rental.StartDate.AddDays((int)RentalsConfigurations.MaxRentalDuration)
                              //latest subscription is still valid at least until 14 days after the rental start date.
-                             && rental.StartDate.AddDays((int)RentalsConfigurations.RentalDuration)>=DateTime.Today
-                              //must not extend in the second week
+                             && rental.StartDate.AddDays((int)RentalsConfigurations.RentalDuration) >= DateTime.Today
+                //must not extend in the second week
             };
             return View(viewModel);
 
@@ -241,34 +240,34 @@ namespace Rent2Read.Web.Controllers
             var copies = _mapper.Map<IList<RentalCopyViewModel>>(rental.RentalCopies.Where(c => !c.ReturnDate.HasValue).ToList());
             if (!ModelState.IsValid)
             {
-                model.Copies =copies;
+                model.Copies = copies;
                 return View(model);
             }
 
-          var subscriber = _dbContext.Subscribers
-                                      .Include(s => s.Subscriptions)
-                                      .SingleOrDefault(s => s.Id == rental.SubscriberId);
+            var subscriber = _dbContext.Subscribers
+                                        .Include(s => s.Subscriptions)
+                                        .SingleOrDefault(s => s.Id == rental.SubscriberId);
 
             if (model.SelectedCopies.Any(c => c.IsReturned.HasValue && !c.IsReturned.Value))
-                //If any copy is selected and marked as "extend" (IsReturned = false)
+            //If any copy is selected and marked as "extend" (IsReturned = false)
             {
-                    string error = string.Empty;
+                string error = string.Empty;
 
-                    if (subscriber!.IsBlackListed)
-                        error = Errors.RentalNotAllowedForBlackListed;
+                if (subscriber!.IsBlackListed)
+                    error = Errors.RentalNotAllowedForBlackListed;
 
-                    else if (subscriber!.Subscriptions.Last().EndDate < rental.StartDate.AddDays((int)RentalsConfigurations.MaxRentalDuration))//If the subscriber's last subscription expires before max rental duration
+                else if (subscriber!.Subscriptions.Last().EndDate < rental.StartDate.AddDays((int)RentalsConfigurations.MaxRentalDuration))//If the subscriber's last subscription expires before max rental duration
                     error = Errors.RentalNotAllowedForInactive;
 
-                    else if (rental.StartDate.AddDays((int)RentalsConfigurations.RentalDuration) < DateTime.Today)
-                        error = Errors.ExtendNotAllowed;
+                else if (rental.StartDate.AddDays((int)RentalsConfigurations.RentalDuration) < DateTime.Today)
+                    error = Errors.ExtendNotAllowed;
 
-                    if (!string.IsNullOrEmpty(error))
-                    {
-                        model.Copies = copies;
-                        ModelState.AddModelError("", error);
-                        return View(model);
-                    }
+                if (!string.IsNullOrEmpty(error))
+                {
+                    model.Copies = copies;
+                    ModelState.AddModelError("", error);
+                    return View(model);
+                }
             }
             var isUpdated = false;
 
