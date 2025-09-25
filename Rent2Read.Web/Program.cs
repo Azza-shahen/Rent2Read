@@ -9,7 +9,8 @@ using Rent2Read.Web.BackgroundTasks;
 using Rent2Read.Web.Core.Mapping;
 using Rent2Read.Web.Helpers;
 using Rent2Read.Web.Seeds;
-
+using Serilog;
+using Serilog.Context;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 using ViewToHTML.Extensions;
@@ -108,6 +109,11 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
 //Scans the entire assembly for all classes inheriting from Profile. Broader and safer.
 
+
+//Add Serilog(a logging library)
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline. 
@@ -121,6 +127,8 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
+app.UseExceptionHandler("/Home/Error");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -185,6 +193,19 @@ RecurringJob.AddOrUpdate(
 
 
 
+app.Use(async (dbContext, next) =>
+{
+    // Push a property called "UserId" into the Serilog LogContext
+    // It reads the current logged-in user's ID from the ClaimsPrincipal (authentication system)
+    LogContext.PushProperty("UserId", dbContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+    LogContext.PushProperty("UserName", dbContext.User.FindFirst(ClaimTypes.Name)?.Value);
+
+    await next(); // Call the next middleware in the pipeline
+});
+
+// Enable Serilog's built-in request logging middleware This automatically logs details about each HTTP request (method, path, status code, timing, etc.)
+app.UseSerilogRequestLogging();
 
 
 

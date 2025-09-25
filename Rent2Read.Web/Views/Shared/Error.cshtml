@@ -1,27 +1,57 @@
-﻿@using Rent2Read.Web.Core.Models
-@using Rent2Read.Web.Core.ViewModels
-@model ErrorViewModel
+﻿@model ErrorViewModel
+
+@inject IWebHostEnvironment _webHostEnvironment;
+
 @{
     ViewData["Title"] = "Error";
+
+    var imageExists = File.Exists($"{_webHostEnvironment.WebRootPath}/assets/images/errors/{Model.ErrorCode}.png");
+
+    var imagePath = $"/assets/images/errors/{(imageExists ? Model.ErrorCode : "general")}";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="d-flex flex-column flex-center text-center min-vh-100 bg-light">
+    <!--begin::Wrapper-->
+    <div class="card shadow-lg border-0 rounded-4 w-lg-650px py-5">
+        <div class="card-body py-15 py-lg-20">
+            <!--begin::Title-->
+            <h1 class="fw-bolder fs-2hx text-danger mb-6">
+                @Model.ErrorDescription ⚠️
+            </h1>
+            <!--end::Title-->
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+            <!--begin::Text-->
+            <div class="fw-semibold fs-6 text-warning mb-7">
+                An unexpected error occurred. Please try again later or contact support.
+            </div>
+            <!--end::Text-->
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+            <!--begin::Illustration-->
+            <div class="mb-9">
+                <img src="@($"{imagePath}.png")" class="mw-100 mh-300px theme-light-show rounded-3 shadow-sm" alt="Error Image">
+                <img src="@($"{imagePath}-dark.png")" class="mw-100 mh-300px theme-dark-show rounded-3 shadow-sm" alt="Error Image">
+            </div>
+            <!--end::Illustration-->
+
+            <!--begin::Code Badge-->
+            <div class="mb-9">
+                <span class="badge bg-danger fs-6 px-4 py-2 shadow-sm">
+                    Error Code: @Model.ErrorCode
+                </span>
+            </div>
+            <!--end::Code Badge-->
+
+            <!--begin::Link-->
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/" class="btn btn-lg btn-primary px-5">
+                    Return Home 🏠
+                </a>
+                <a href="javascript:location.reload();" class="btn btn-lg btn-outline-secondary px-5">
+                    Try Again 🔄
+                </a>
+            </div>
+            <!--end::Link-->
+        </div>
+    </div>
+    <!--end::Wrapper-->
+</div>
