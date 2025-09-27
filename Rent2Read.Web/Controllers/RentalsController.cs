@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.DataProtection;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Reception)]
-    public class RentalsController(ApplicationDbContext _dbContext
+    public class RentalsController(IApplicationDbContext _dbContext
                                    , IDataProtectionProvider provider
                                    , IMapper _mapper) : Controller
 
@@ -57,7 +57,7 @@ namespace Rent2Read.Web.Controllers
             return View("Form", viewModel);
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Create(RentalFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -151,7 +151,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Edit(RentalFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -183,7 +183,7 @@ namespace Rent2Read.Web.Controllers
                 return View("NotAllowedRental", rentalsError);
 
             rental.RentalCopies = copies;
-            rental.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            rental.LastUpdatedById = User.GetUserId();
             rental.LastUpdatedOn = DateTime.Now;
 
             _dbContext.SaveChanges();
@@ -225,7 +225,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Return(RentalReturnFormViewModel model)
         {
             var rental = _dbContext.Rentals
@@ -300,7 +300,7 @@ namespace Rent2Read.Web.Controllers
             if (isUpdated)
             {
                 rental.LastUpdatedOn = DateTime.Now;
-                rental.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;//Record which user did the update (logged in user)
+                rental.LastUpdatedById = User.GetUserId();//Record which user did the update (logged in user)
                 rental.PenaltyPaid = model.PenaltyPaid;
 
                 _dbContext.SaveChanges();
@@ -312,7 +312,7 @@ namespace Rent2Read.Web.Controllers
         #region GetCopyDetails
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult GetCopyDetails(SearchFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -344,7 +344,7 @@ namespace Rent2Read.Web.Controllers
         #region MarkAsDeleted
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult MarkAsDeleted(int id)
         {
 
@@ -354,7 +354,7 @@ namespace Rent2Read.Web.Controllers
                 return NotFound();
             rental.IsDeleted = true;
             rental.LastUpdatedOn = DateTime.Now;
-            rental.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            rental.LastUpdatedById = User.GetUserId();
 
             _dbContext.SaveChanges();
 

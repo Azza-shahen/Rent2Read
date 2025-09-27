@@ -8,7 +8,7 @@ using System.Linq.Dynamic.Core;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BooksController(ApplicationDbContext _dbContext, IMapper _mapper
+    public class BooksController(IApplicationDbContext _dbContext, IMapper _mapper
                                         /* , IWebHostEnvironment _webHostEnvironment*/
                                         , IImageService _imageService
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
@@ -25,10 +25,10 @@ namespace Rent2Read.Web.Controllers
                )
            );*/
 
-
+/*
         //private =>encapsulation
         private readonly List<string> _allowedExtensions = new() { ".png", ".jpg", ".jpeg" };// is used to store the allowed file extensions and size
-        private readonly int _maxAllowedSize = 2097152;//2MB
+        private readonly int _maxAllowedSize = 2097152;//2MB*/
         #region Index
         public IActionResult Index()
         {
@@ -44,6 +44,7 @@ namespace Rent2Read.Web.Controllers
         // and then returns the total count and the current page of data in JSON format.
         // This helps in handling large datasets efficiently by loading only the required rows.
         [HttpPost]
+        [IgnoreAntiforgeryToken]
         public IActionResult GetBooks(int start, int length)
         {
             //var skip = int.Parse(Request.Form["start"]);
@@ -111,7 +112,6 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BookFormViewModel model)
         {
             if (ModelState.IsValid)
@@ -149,7 +149,7 @@ namespace Rent2Read.Web.Controllers
                        book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl);
                        book.ImagePublicId = result.PublicId;*/
                 }
-                book.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                book.CreatedById = User.GetUserId();
 
                 foreach (var category in model.SelectedCategories)
                 {
@@ -159,7 +159,7 @@ namespace Rent2Read.Web.Controllers
 
                     book.Categories.Add(new BookCategory { CategoryId = category });
                 }
-                _dbContext.Add(book);
+                _dbContext.Books.Add(book);
                 _dbContext.SaveChanges();
                 return RedirectToAction(nameof(Details), new { id = book.Id });
 
@@ -184,7 +184,6 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(BookFormViewModel model)
         {
             if (ModelState.IsValid)
@@ -244,7 +243,7 @@ namespace Rent2Read.Web.Controllers
 
 
                 book = _mapper.Map(model, book);
-                book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                book.LastUpdatedById = User.GetUserId();
                 book.LastUpdatedOn = DateTime.Now;
 
                 /* book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl!);*/
@@ -257,14 +256,29 @@ namespace Rent2Read.Web.Controllers
                   */
                     book.Categories.Add(new BookCategory { CategoryId = category });
                 }
-                if (!book.IsAvailableForRental)
-                {
-                    foreach (var copy in book.Copies)
+                // This works in-memory: it requires the copies to be already loaded from the database.
+                // Changes will only be saved to the database
+                // after calling _context.SaveChanges().
+
+                /*    if (!book.IsAvailableForRental)
                     {
-                        copy.IsAvailableForRental = false;
-                    }
-                }
+                        foreach (var copy in book.Copies)
+                            copy.IsAvailableForRental = false;
+
+                    }*/
+                /*    if (!book.IsAvailableForRental)
+                    {
+                        book.Copies.ToList().ForEach(copy => copy.IsAvailableForRental = false);
+                    }*/
                 _dbContext.SaveChanges();
+
+                // This does not require loading the copies into memory. It performs a single SQL UPDATE statement
+                //which is faster and more efficient for large datasets.
+
+                if (!model.IsAvailableForRental)
+                    _dbContext.BookCopies.Where(c => c.BookId == book.Id)
+                       .ExecuteUpdate(p => p.SetProperty(c => c.IsAvailableForRental, false));
+
                 return RedirectToAction(nameof(Details), new { id = book.Id });
 
             }
@@ -274,7 +288,6 @@ namespace Rent2Read.Web.Controllers
         #endregion
         #region ToggleStatus
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult ToggleStatus(int id)
         {
 
@@ -286,7 +299,7 @@ namespace Rent2Read.Web.Controllers
 
 
             book.IsDeleted = !book.IsDeleted;
-            book.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            book.LastUpdatedById = User.GetUserId();
             book.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok();

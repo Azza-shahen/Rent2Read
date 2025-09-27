@@ -45,7 +45,7 @@ namespace Rent2Read.Web.Controllers
 
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Create(UserFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -121,7 +121,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]//Protection against CSRF (Cross-Site Request Forgery) attacks, the token must be sent with the form.
+        //Protection against CSRF (Cross-Site Request Forgery) attacks, the token must be sent with the form.
         public async Task<IActionResult> Edit(UserFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -133,7 +133,7 @@ namespace Rent2Read.Web.Controllers
                 return NotFound();
 
             user = _mapper.Map(model, user);
-            user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            user.LastUpdatedById = User.GetUserId();
             user.LastUpdatedOn = DateTime.Now;
 
             var result = await _userManager.UpdateAsync(user);
@@ -179,7 +179,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> ResetPassword(ResetPasswordFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -200,7 +200,7 @@ namespace Rent2Read.Web.Controllers
             //we can use it instead of Remove ,Add
             if (result.Succeeded)
             {
-                user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                user.LastUpdatedById = User.GetUserId();
                 user.LastUpdatedOn = DateTime.Now;
 
                 await _userManager.UpdateAsync(user);
@@ -221,7 +221,7 @@ namespace Rent2Read.Web.Controllers
         #region ToggleStatus
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> ToggleStatus(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -230,7 +230,7 @@ namespace Rent2Read.Web.Controllers
                 return NotFound();
 
             user.IsDeleted = !user.IsDeleted;
-            user.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            user.LastUpdatedById = User.GetUserId();
             user.LastUpdatedOn = DateTime.Now;
 
             await _userManager.UpdateAsync(user);
@@ -246,7 +246,7 @@ namespace Rent2Read.Web.Controllers
         #endregion
         #region LockOut
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Unlock(string id)
         {
             var user = await _userManager.FindByIdAsync(id);

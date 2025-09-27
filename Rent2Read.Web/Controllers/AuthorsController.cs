@@ -3,7 +3,7 @@
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class AuthorsController(ApplicationDbContext _dbContext, IMapper _mapper) : Controller
+    public class AuthorsController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
     {
         #region Index
 
@@ -24,13 +24,12 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public IActionResult Create(AuthorFormViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var author = _mapper.Map<Author>(model);
-                author.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                author.CreatedById = User.GetUserId();
                 _dbContext.Authors.Add(author);
                 _dbContext.SaveChanges();
                 var authorVM = _mapper.Map<AuthorViewModel>(author);
@@ -53,7 +52,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Edit(AuthorFormViewModel model)
         {
             if (ModelState.IsValid)
@@ -64,7 +63,7 @@ namespace Rent2Read.Web.Controllers
                     return NotFound();
                 }
                 var name = _mapper.Map(model, author);
-                author.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                author.LastUpdatedById = User.GetUserId();
                 author.LastUpdatedOn = DateTime.Now;
                 _dbContext.SaveChanges();
 
@@ -87,7 +86,7 @@ namespace Rent2Read.Web.Controllers
             }
 
             author.IsDeleted = !author.IsDeleted;
-            author.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            author.LastUpdatedById = User.GetUserId();
 
             author.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();

@@ -4,16 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class CategoriesController : Controller
+    public class CategoriesController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly IMapper _mapper;
 
-        public CategoriesController(ApplicationDbContext dbContext, IMapper mapper)
-        {
-            _dbContext = dbContext;
-            _mapper = mapper;
-        }
         #region Index
         public IActionResult Index()
         {
@@ -49,7 +42,7 @@ namespace Rent2Read.Web.Controllers
 
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         /*
          * applies CSRF(Cross-Site Request Forgery) validation to a specific action
          * for every unsafe HTTP request(like POST, PUT, DELETE).
@@ -60,9 +53,9 @@ namespace Rent2Read.Web.Controllers
             if (ModelState.IsValid)//Server Side Validation
             {
                 var category = _mapper.Map<Category>(model);
-                category.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                category.CreatedById = User.GetUserId();
 
-                _dbContext/*.Categories*/.Add(category);
+                _dbContext.Categories.Add(category);
                 _dbContext.SaveChanges();
 
 
@@ -89,7 +82,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Edit(CategoryFormViewModel model)
         {
             if (ModelState.IsValid)
@@ -102,7 +95,7 @@ namespace Rent2Read.Web.Controllers
                 }
                 //category.Name = model.Name;
                 category = _mapper.Map(model, category);
-                category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+                category.LastUpdatedById = User.GetUserId();
                 category.LastUpdatedOn = DateTime.Now;
                 _dbContext.SaveChanges();
 
@@ -117,7 +110,7 @@ namespace Rent2Read.Web.Controllers
         #endregion
         #region ToggleStatus
 
-        [ValidateAntiForgeryToken]
+
         public IActionResult ToggleStatus(int id)
         {
 
@@ -138,7 +131,7 @@ namespace Rent2Read.Web.Controllers
             */
 
             category.IsDeleted = !category.IsDeleted;
-            category.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            category.LastUpdatedById = User.GetUserId();
             category.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
             return Ok(category.LastUpdatedOn.ToString());

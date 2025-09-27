@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Rent2Read.Web.Controllers
 {
-    public class SearchController(ApplicationDbContext _dbContext
+    public class SearchController(IApplicationDbContext _dbContext
                                             , IDataProtectionProvider provider
                                             , IMapper _mapper
-                                            , IHashids _hashids) : Controller
+                                            /*, IHashids _hashids*/) : Controller
     {
         private readonly IDataProtector _dataProtector = provider.CreateProtector("MySecureKey");
 

@@ -5,7 +5,9 @@
  * license: MIT
  * http://bootboxjs.com/
  */
-(function(global, factory) {
+(function (global,
+
+) {
   'use strict';
   if (typeof define === 'function' && define.amd) {
     define(['bootbox'], factory);

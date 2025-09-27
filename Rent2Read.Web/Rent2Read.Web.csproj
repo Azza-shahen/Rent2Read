@@ -14,10 +14,8 @@
     <PackageReference Include="Hangfire" Version="1.8.21" />
     <PackageReference Include="Hashids.net" Version="1.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.18" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.18" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
     <PackageReference Include="OpenHtmlToPdf.netcore" Version="1.13.0" />
@@ -35,6 +33,11 @@
   <ItemGroup>
     <Folder Include="wwwroot\images\Subscribers\thumb\" />
     <Folder Include="wwwroot\images\users\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rent2Read.Application\Rent2Read.Application.csproj" />
+    <ProjectReference Include="..\Rent2Read.Infrastructure\Rent2Read.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

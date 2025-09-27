@@ -32,11 +32,37 @@
 	<!--begin::Theme mode setup on page load-->
 	<script>var defaultThemeMode = "light"; var themeMode; if ( document.documentElement ) { if ( document.documentElement.hasAttribute("data-theme-mode")) { themeMode = document.documentElement.getAttribute("data-theme-mode"); } else { if ( localStorage.getItem("data-theme") !== null ) { themeMode = localStorage.getItem("data-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-theme", themeMode); }</script>
 	<!--end::Theme mode setup on page load-->
-	<div class="page-loader">
+
+    <!--begin::no script-->
+    <noscript>
+        <div class="position-fixed top-0 start-0 h-100 w-100 bg-light d-flex flex-column justify-content-center align-items-center text-center" style="z-index: 999999;">
+            <!-- Title -->
+            <h1 class="text-danger fw-bold mb-3">
+                ⚠️ JavaScript Disabled
+            </h1>
+
+            <!-- Description -->
+            <p class="text-muted fs-5 mb-4">
+                For the best experience, please enable JavaScript in your browser and refresh the page.
+            </p>
+
+            <!-- Button -->
+            <a href="/" class="btn btn-primary px-4 py-2 shadow-sm rounded-pill">
+                🔄 Refresh Page
+            </a>
+        </div>
+    </noscript>
+
+    <!--end::no script-->
+
+    <!--begin:: page loader-->
+<div class="page-loader">
 	<span class="spinner-border text-primary" role="status">
 		<span class="visually-hidden">Loading...</span>
 	</span>
 	</div>
+    <!--end:: page loader-->
+
 	<!--begin::Main-->
     <!--begin::Root-->
     @if (SignInManager.IsSignedIn(User))

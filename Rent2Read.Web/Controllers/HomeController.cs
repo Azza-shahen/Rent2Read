@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
-using System.Diagnostics;
 
 
 namespace Rent2Read.Web.Controllers
 {
     //[Authorize]
-    public class HomeController(ApplicationDbContext _dbContext
+    public class HomeController(IApplicationDbContext _dbContext
                                     , IMapper _mapper
                                     , IDataProtectionProvider provider
                                     /*, IHashids _hashids*/) : Controller

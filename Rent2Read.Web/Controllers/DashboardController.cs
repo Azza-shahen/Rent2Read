@@ -3,7 +3,7 @@
 namespace Rent2Read.Web.Controllers
 {
     [Authorize]
-    public class DashboardController(ApplicationDbContext _dbContext, IMapper _mapper) : Controller
+    public class DashboardController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
     {
 
         #region Index

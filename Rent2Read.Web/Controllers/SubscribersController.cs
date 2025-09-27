@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Reception)]
-    public class SubscribersController(ApplicationDbContext _dbContext
+    public class SubscribersController(IApplicationDbContext _dbContext
                                             , IDataProtectionProvider provider
                                             , IMapper _mapper
                                             , IEmailBody _emailBody
@@ -27,7 +27,7 @@ namespace Rent2Read.Web.Controllers
         #endregion
         #region Search
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Search(SearchFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -55,7 +55,7 @@ namespace Rent2Read.Web.Controllers
             return View("Form", viewModel);
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Create(SubscriberFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -76,7 +76,7 @@ namespace Rent2Read.Web.Controllers
 
             subscriber.ImageUrl = $"{imagePath}/{imageName}";
             subscriber.ImageThumbnailUrl = $"{imagePath}/thumb/{imageName}";
-            subscriber.CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            subscriber.CreatedById = User.GetUserId();
 
             Subscription subscription = new()
             {
@@ -87,7 +87,7 @@ namespace Rent2Read.Web.Controllers
             };
             subscriber.Subscriptions.Add(subscription);
 
-            _dbContext.Add(subscriber);
+            _dbContext.Subscribers.Add(subscriber);
             _dbContext.SaveChanges();
 
             //Send welcome email
@@ -152,7 +152,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Edit(SubscriberFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -192,7 +192,7 @@ namespace Rent2Read.Web.Controllers
             }
 
             subscriber = _mapper.Map(model, subscriber);
-            subscriber.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            subscriber.LastUpdatedById = User.GetUserId();
             subscriber.LastUpdatedOn = DateTime.Now;
 
             _dbContext.SaveChanges();
@@ -204,7 +204,7 @@ namespace Rent2Read.Web.Controllers
         #region RenewSubscription
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult RenewSubscription(string sKey)
         {
             var subscriberId = int.Parse(_dataProtector.Unprotect(sKey));

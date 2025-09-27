@@ -3,7 +3,7 @@
 
 namespace Rent2Read.Web.BackgroundTasks
 {
-    public class HangfireTasks(ApplicationDbContext _dbContext
+    public class HangfireTasks(IApplicationDbContext _dbContext
                                             , IEmailBody _emailBody
                                             , IEmailSender _emailSender)
     {
@@ -46,7 +46,7 @@ namespace Rent2Read.Web.BackgroundTasks
                     .Include(r => r.RentalCopies)
                     .ThenInclude(c => c.BookCopy)
                     .ThenInclude(bc => bc!.Book)
-                    .Where(r => r.RentalCopies.Any(r => r.EndDate.Date == tomorrow))
+                    .Where(r => r.RentalCopies.Any(r => r.EndDate.Date == tomorrow && !r.ReturnDate.HasValue))
                     .ToList();
 
             foreach (var rental in rentals)

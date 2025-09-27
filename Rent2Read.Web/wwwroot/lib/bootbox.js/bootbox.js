@@ -5,7 +5,8 @@
  * license: MIT
  * http://bootboxjs.com/
  */
-(function (root, factory) {
+(function (root,
+) {
   'use strict';
   if (typeof define === 'function' && define.amd) {
     // AMD

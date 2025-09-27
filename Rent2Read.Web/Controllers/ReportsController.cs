@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OpenHtmlToPdf;
-using Rent2Read.Web.Extensions;
 using System.Net.Mime;
 using ViewToHTML.Services;
 
@@ -10,7 +9,7 @@ using ViewToHTML.Services;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Admin)]
-    public class ReportsController(ApplicationDbContext _dbContext
+    public class ReportsController(IApplicationDbContext _dbContext
                                              , IMapper _mapper
                                              , IViewRendererService _viewRendererService
                                              , IWebHostEnvironment _webHostEnvironment) : Controller

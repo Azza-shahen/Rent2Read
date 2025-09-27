@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
+
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BookCopiesController(ApplicationDbContext _dbContext, IMapper _mapper) : Controller
+    public class BookCopiesController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
     {
 
         #region Create
@@ -25,7 +26,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Create(BookCopyFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -87,7 +88,7 @@ namespace Rent2Read.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult Edit(BookCopyFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -100,7 +101,7 @@ namespace Rent2Read.Web.Controllers
 
             copy.EditionNumber = model.EditionNumber;
             copy.IsAvailableForRental = copy.Book!.IsAvailableForRental && model.IsAvailableForRental;
-            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            copy.LastUpdatedById = User.GetUserId();
 
             copy.LastUpdatedOn = DateTime.Now;
 
@@ -115,7 +116,7 @@ namespace Rent2Read.Web.Controllers
         #endregion
         #region ToggleStatus
         [HttpPost]
-        [ValidateAntiForgeryToken]
+
         public IActionResult ToggleStatus(int id)
         {
 
@@ -127,7 +128,7 @@ namespace Rent2Read.Web.Controllers
 
 
             copy.IsDeleted = !copy.IsDeleted;
-            copy.LastUpdatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            copy.LastUpdatedById = User.GetUserId();
 
             copy.LastUpdatedOn = DateTime.Now;
             _dbContext.SaveChanges();
