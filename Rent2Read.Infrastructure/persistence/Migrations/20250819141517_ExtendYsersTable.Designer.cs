@@ -11,7 +11,7 @@ using Rent2Read.Infrastructure.persistence;
 
 namespace Rent2Read.Infrastructure.persistence
 {
-    [DbContext(typeof(IApplicationDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250819141517_ExtendYsersTable")]
     partial class ExtendYsersTable
     {

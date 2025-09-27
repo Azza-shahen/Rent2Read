@@ -17,7 +17,7 @@ namespace Rent2Read.Web
             WebApplicationBuilder builder)
         {
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-           
+
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             /* services.AddWhatsAppApiClient(builder.Configuration);*/
@@ -30,7 +30,7 @@ namespace Rent2Read.Web
 
 
             /*services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<IApplicationDbContext>();*/
+                .AddEntityFrameworkStores<ApplicationDbContext>();*/
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
                 //RequireConfirmedAccount = true → users must confirm their email before signing in

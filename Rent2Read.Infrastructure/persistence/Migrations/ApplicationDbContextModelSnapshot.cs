@@ -10,14 +10,14 @@ using Rent2Read.Infrastructure.persistence;
 
 namespace Rent2Read.Infrastructure.persistence
 {
-    [DbContext(typeof(IApplicationDbContext))]
-    partial class IApplicationDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ApplicationDbContext))]
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.18")
+                .HasAnnotation("ProductVersion", "8.0.20")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -158,7 +158,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -174,7 +174,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -251,7 +253,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Area", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Area", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -263,7 +265,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("GovernorateId")
                         .HasColumnType("int");
@@ -296,7 +300,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Areas");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Author", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Author", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -308,7 +312,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -336,7 +342,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Authors");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Book", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Book", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -351,7 +357,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -410,7 +418,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Books");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.BookCategory", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.BookCategory", b =>
                 {
                     b.Property<int>("BookId")
                         .HasColumnType("int");
@@ -425,7 +433,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("BookCategories");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.BookCopy", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.BookCopy", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -440,7 +448,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("EditionNumber")
                         .HasColumnType("int");
@@ -473,7 +483,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("BookCopies");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Category", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -485,7 +495,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -513,7 +525,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Governorate", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Governorate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -525,7 +537,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -553,7 +567,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Governorates");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Rental", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Rental", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -565,7 +579,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -580,7 +596,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CAST(GETDATE() AS Date)");
 
                     b.Property<int>("SubscriberId")
                         .HasColumnType("int");
@@ -596,7 +614,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Rentals");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.RentalCopy", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.RentalCopy", b =>
                 {
                     b.Property<int>("RentalId")
                         .HasColumnType("int");
@@ -611,7 +629,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("RentalDate")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CAST(GETDATE() AS Date)");
 
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("datetime2");
@@ -623,7 +643,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("RentalCopies");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Subscriber", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Subscriber", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -643,7 +663,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -723,7 +745,7 @@ namespace Rent2Read.Infrastructure.persistence
                     b.ToTable("Subscribers");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Subscription", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Subscription", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -735,7 +757,9 @@ namespace Rent2Read.Infrastructure.persistence
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -760,25 +784,25 @@ namespace Rent2Read.Infrastructure.persistence
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", null)
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", null)
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -787,38 +811,38 @@ namespace Rent2Read.Infrastructure.persistence
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", null)
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", null)
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Area", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Area", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.Governorate", "Governorate")
+                    b.HasOne("Rent2Read.Domain.Entities.Governorate", "Governorate")
                         .WithMany("Areas")
                         .HasForeignKey("GovernorateId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -829,13 +853,13 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Author", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Author", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -844,19 +868,19 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Book", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Book", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.Author", "Author")
+                    b.HasOne("Rent2Read.Domain.Entities.Author", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -867,15 +891,15 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.BookCategory", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.BookCategory", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.Book", "Book")
+                    b.HasOne("Rent2Read.Domain.Entities.Book", "Book")
                         .WithMany("Categories")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.Category", "Category")
+                    b.HasOne("Rent2Read.Domain.Entities.Category", "Category")
                         .WithMany("Books")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -886,19 +910,19 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.BookCopy", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.BookCopy", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.Book", "Book")
+                    b.HasOne("Rent2Read.Domain.Entities.Book", "Book")
                         .WithMany("Copies")
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -909,13 +933,13 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Category", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Category", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -924,13 +948,13 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Governorate", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Governorate", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -939,17 +963,17 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Rental", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Rental", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.Subscriber", "Subscriber")
+                    b.HasOne("Rent2Read.Domain.Entities.Subscriber", "Subscriber")
                         .WithMany("Rentals")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -962,15 +986,15 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("Subscriber");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.RentalCopy", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.RentalCopy", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.BookCopy", "BookCopy")
-                        .WithMany()
+                    b.HasOne("Rent2Read.Domain.Entities.BookCopy", "BookCopy")
+                        .WithMany("Rentals")
                         .HasForeignKey("BookCopyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.Rental", "Rental")
+                    b.HasOne("Rent2Read.Domain.Entities.Rental", "Rental")
                         .WithMany("RentalCopies")
                         .HasForeignKey("RentalId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -981,25 +1005,25 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("Rental");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Subscriber", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Subscriber", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.Area", "Area")
+                    b.HasOne("Rent2Read.Domain.Entities.Area", "Area")
                         .WithMany()
                         .HasForeignKey("AreaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.Governorate", "Governorate")
+                    b.HasOne("Rent2Read.Domain.Entities.Governorate", "Governorate")
                         .WithMany()
                         .HasForeignKey("GovernorateId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "LastUpdatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "LastUpdatedBy")
                         .WithMany()
                         .HasForeignKey("LastUpdatedById");
 
@@ -1012,13 +1036,13 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("LastUpdatedBy");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Subscription", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Subscription", b =>
                 {
-                    b.HasOne("Rent2Read.Web.Core.Models.ApplicationUser", "CreatedBy")
+                    b.HasOne("Rent2Read.Domain.Entities.ApplicationUser", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("Rent2Read.Web.Core.Models.Subscriber", "Subscriber")
+                    b.HasOne("Rent2Read.Domain.Entities.Subscriber", "Subscriber")
                         .WithMany("Subscriptions")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1029,29 +1053,34 @@ namespace Rent2Read.Infrastructure.persistence
                     b.Navigation("Subscriber");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Book", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Book", b =>
                 {
                     b.Navigation("Categories");
 
                     b.Navigation("Copies");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Category", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.BookCopy", b =>
+                {
+                    b.Navigation("Rentals");
+                });
+
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Books");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Governorate", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Governorate", b =>
                 {
                     b.Navigation("Areas");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Rental", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Rental", b =>
                 {
                     b.Navigation("RentalCopies");
                 });
 
-            modelBuilder.Entity("Rent2Read.Web.Core.Models.Subscriber", b =>
+            modelBuilder.Entity("Rent2Read.Domain.Entities.Subscriber", b =>
                 {
                     b.Navigation("Rentals");
 

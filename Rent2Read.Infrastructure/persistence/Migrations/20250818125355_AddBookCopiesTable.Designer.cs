@@ -10,8 +10,8 @@ using Rent2Read.Infrastructure.persistence;
 #nullable disable
 
 namespace Rent2Read.Infrastructure.persistence
-{
-    [DbContext(typeof(IApplicationDbContext))]
+{       
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250818125355_AddBookCopiesTable")]
     partial class AddBookCopiesTable
     {

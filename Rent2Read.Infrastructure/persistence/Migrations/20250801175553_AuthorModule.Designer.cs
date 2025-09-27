@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Rent2Read.Infrastructure.persistence
 {
-    [DbContext(typeof(IApplicationDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250801175553_AuthorModule")]
     partial class AuthorModule
     {

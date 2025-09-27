@@ -1,4 +1,3 @@
-using DocumentFormat.OpenXml.InkML;
 using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Identity;
@@ -91,7 +90,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 // Register a recurring job with Hangfire to send subscription expiration alerts.
 // This job runs every day at 2:00 PM (local time) and calls the PrepareExpirationAlert method.
-var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 var emailBody = scope.ServiceProvider.GetRequiredService<IEmailBody>();
 var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 

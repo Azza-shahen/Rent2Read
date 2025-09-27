@@ -1,5 +1,4 @@
-﻿using HashidsNet;
-using Microsoft.AspNetCore.DataProtection;
+﻿using Microsoft.AspNetCore.DataProtection;
 
 namespace Rent2Read.Web.Controllers
 {

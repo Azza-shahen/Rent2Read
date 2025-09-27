@@ -1,32 +1,22 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Rent2Read.Infrastructure.persistence
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options),IApplicationDbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options), IApplicationDbContext
     {
 
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-
-
             // Define a sequence named "SerialNumber" in schema "shared" that starts at 1000001
             builder.HasSequence<int>("SerialNumber", schema: "shared")
                  .StartsAt(1000001);
-            //SerialNumber property  automatically gets the next value from the "shared.SerialNumber" sequence
-            builder.Entity<BookCopy>()
-                .Property(e => e.SerialNumber)
-                .HasDefaultValueSql("NEXT VALUE FOR shared.SerialNumber");
 
-            builder.Entity<BookCategory>().HasKey(e => new { e.BookId, e.CategoryId });//Composite Key
-            builder.Entity<RentalCopy>().HasKey(e => new { e.RentalId, e.BookCopyId });//Composite Key
 
-            // Apply global query filter: exclude Rentals that are marked as deleted
-            builder.Entity<Rental>().HasQueryFilter(e => !e.IsDeleted);
-            builder.Entity<RentalCopy>().HasQueryFilter(e => !e.Rental!.IsDeleted);//exclude RentalCopies that belong to a deleted Rental
-
-            base.OnModelCreating(builder);
+            //This automatically applies all IEntityTypeConfiguration<T> implementations found in the current assembly(where DbContext exists). 
+            // Instead of registering each entity configuration manually, EF Core will scan the assembly and apply configurations for all entities at once.
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
             var cascadeFKs = builder.Model.GetEntityTypes()//It brings all the entities that are created in the model.
                          .SelectMany(t => t.GetForeignKeys())
@@ -35,7 +25,7 @@ namespace Rent2Read.Infrastructure.persistence
             foreach (var fk in cascadeFKs)
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
 
-
+            base.OnModelCreating(builder);
         }
         public DbSet<Area> Areas { get; set; }
         public DbSet<Author> Authors { get; set; }

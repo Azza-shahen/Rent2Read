@@ -11,7 +11,7 @@ using Rent2Read.Infrastructure.persistence;
 
 namespace Rent2Read.Infrastructure.persistence
 {
-    [DbContext(typeof(IApplicationDbContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250829103013_AddSubscribers_Areas_GovernoratesTables")]
     partial class AddSubscribers_Areas_GovernoratesTables
     {

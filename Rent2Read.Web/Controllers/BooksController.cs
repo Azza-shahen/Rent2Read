@@ -25,10 +25,10 @@ namespace Rent2Read.Web.Controllers
                )
            );*/
 
-/*
-        //private =>encapsulation
-        private readonly List<string> _allowedExtensions = new() { ".png", ".jpg", ".jpeg" };// is used to store the allowed file extensions and size
-        private readonly int _maxAllowedSize = 2097152;//2MB*/
+        /*
+                //private =>encapsulation
+                private readonly List<string> _allowedExtensions = new() { ".png", ".jpg", ".jpeg" };// is used to store the allowed file extensions and size
+                private readonly int _maxAllowedSize = 2097152;//2MB*/
         #region Index
         public IActionResult Index()
         {

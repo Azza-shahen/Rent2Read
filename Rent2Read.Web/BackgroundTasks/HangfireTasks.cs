@@ -3,7 +3,7 @@
 
 namespace Rent2Read.Web.BackgroundTasks
 {
-    public class HangfireTasks(IApplicationDbContext _dbContext
+    public class HangfireTasks(ApplicationDbContext _dbContext
                                             , IEmailBody _emailBody
                                             , IEmailSender _emailSender)
     {
