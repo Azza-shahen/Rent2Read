@@ -13,7 +13,8 @@ namespace Rent2Read.Web.Controllers
                                  , RoleManager<IdentityRole> _roleManager
                                  , IEmailSender _emailSender
                                  , IEmailBody _emailBody
-                                 , IMapper _mapper) : Controller
+                                 , IMapper _mapper
+                                 ,IValidator<UserFormViewModel> _validator) : Controller
     {
         #region Index
         public async Task<IActionResult> Index()
@@ -48,7 +49,8 @@ namespace Rent2Read.Web.Controllers
 
         public async Task<IActionResult> Create(UserFormViewModel model)
         {
-            if (!ModelState.IsValid)
+            var validationResult = _validator.Validate(model);
+            if (!validationResult.IsValid)
                 return BadRequest();
 
             ApplicationUser user = new()
@@ -124,7 +126,9 @@ namespace Rent2Read.Web.Controllers
         //Protection against CSRF (Cross-Site Request Forgery) attacks, the token must be sent with the form.
         public async Task<IActionResult> Edit(UserFormViewModel model)
         {
-            if (!ModelState.IsValid)
+            var validationResult = _validator.Validate(model);
+
+            if (!validationResult.IsValid)
                 return BadRequest();
 
             var user = await _userManager.FindByIdAsync(model.Id!);

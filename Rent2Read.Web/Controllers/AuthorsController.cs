@@ -3,7 +3,9 @@
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class AuthorsController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
+    public class AuthorsController(IApplicationDbContext _dbContext
+                                    , IMapper _mapper
+                                    , IValidator<AuthorFormViewModel> _validator) : Controller
     {
         #region Index
 
@@ -26,7 +28,8 @@ namespace Rent2Read.Web.Controllers
         [HttpPost]
         public IActionResult Create(AuthorFormViewModel model)
         {
-            if (ModelState.IsValid)
+            var validationResult = _validator.Validate(model);
+            if (validationResult.IsValid)
             {
                 var author = _mapper.Map<Author>(model);
                 author.CreatedById = User.GetUserId();
@@ -55,7 +58,8 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult Edit(AuthorFormViewModel model)
         {
-            if (ModelState.IsValid)
+            var validationResult = _validator.Validate(model);
+            if (validationResult.IsValid)
             {
                 var author = _dbContext.Authors.Find(model.Id);
                 if (author is null)

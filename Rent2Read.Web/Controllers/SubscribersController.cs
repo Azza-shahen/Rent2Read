@@ -1,4 +1,6 @@
-﻿using Hangfire;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -14,7 +16,8 @@ namespace Rent2Read.Web.Controllers
                                             , IMapper _mapper
                                             , IEmailBody _emailBody
                                             , IEmailSender _emailSender
-                                            , IImageService _imageService) : Controller
+                                            , IImageService _imageService
+                                            , IValidator<SubscriberFormViewModel> _validator) : Controller
     {
         private readonly IDataProtector _dataProtector = provider.CreateProtector("MySecureKey");
 
@@ -58,6 +61,11 @@ namespace Rent2Read.Web.Controllers
 
         public async Task<IActionResult> Create(SubscriberFormViewModel model)
         {
+            var validationResult = _validator.Validate(model);
+
+            if (!validationResult.IsValid)
+                validationResult.AddToModelState(ModelState);
+
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
@@ -111,7 +119,6 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-
         #region Details
         public IActionResult Details(string? id)
         {
@@ -155,6 +162,11 @@ namespace Rent2Read.Web.Controllers
 
         public async Task<IActionResult> Edit(SubscriberFormViewModel model)
         {
+            var validationResult = _validator.Validate(model);
+
+            if (!validationResult.IsValid)
+                validationResult.AddToModelState(ModelState);
+
             if (!ModelState.IsValid)
                 return View("Form", PopulateViewModel(model));
 
@@ -200,7 +212,6 @@ namespace Rent2Read.Web.Controllers
             return RedirectToAction(nameof(Details), new { id = model.Key });
         }
         #endregion
-
         #region RenewSubscription
 
         [HttpPost]
@@ -275,7 +286,6 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-
         #region PopulateViewModelFunc
         private SubscriberFormViewModel PopulateViewModel(SubscriberFormViewModel? model = null)
         {

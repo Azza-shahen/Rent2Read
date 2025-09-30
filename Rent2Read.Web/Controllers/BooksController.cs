@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 using SixLabors.ImageSharp;
@@ -11,6 +12,7 @@ namespace Rent2Read.Web.Controllers
     public class BooksController(IApplicationDbContext _dbContext, IMapper _mapper
                                         /* , IWebHostEnvironment _webHostEnvironment*/
                                         , IImageService _imageService
+                                        ,IValidator<BookFormViewModel> _validator
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
     { /* IWebHostEnvironment => - to know the location of wwwroot and store images there.
                                 -Checking environment(IsDevelopment)
@@ -47,8 +49,8 @@ namespace Rent2Read.Web.Controllers
         [IgnoreAntiforgeryToken]
         public IActionResult GetBooks(int start, int length)
         {
-            //var skip = int.Parse(Request.Form["start"]);
-            //int pageSize = int.Parse(Request.Form["length"]);
+           // var skip = int.Parse(Request.Form["start"]!);
+            //int pageSize = int.Parse(Request.Form["length"]!);
             // start = the row you start from.
             //length=>The number of classes you take.
             var searchValue = Request.Form["search[value]"];
@@ -102,7 +104,6 @@ namespace Rent2Read.Web.Controllers
             return View(bookVM);
         }
         #endregion
-
         #region Create
         [HttpGet]
         public IActionResult Create()
@@ -114,6 +115,11 @@ namespace Rent2Read.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(BookFormViewModel model)
         {
+            var validationResult = _validator.Validate(model);
+            if (!validationResult.IsValid)
+                validationResult.AddToModelState(ModelState);
+
+
             if (ModelState.IsValid)
             {
                 var book = _mapper.Map<Book>(model);
@@ -167,7 +173,6 @@ namespace Rent2Read.Web.Controllers
             return View("Form", PopulateViewModel(model));
         }
         #endregion
-
         #region Edit
         [HttpGet]
         public IActionResult Edit(int id)
@@ -186,6 +191,10 @@ namespace Rent2Read.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(BookFormViewModel model)
         {
+            var validationResult = _validator.Validate(model);
+            if (!validationResult.IsValid)
+                validationResult.AddToModelState(ModelState);
+
             if (ModelState.IsValid)
             {
 
@@ -307,7 +316,6 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-
         #region AllowItem
         public IActionResult AllowItem(BookFormViewModel model)
         {
@@ -326,7 +334,6 @@ namespace Rent2Read.Web.Controllers
         ///             -GET Create: to display dropdowns/lists.
         ///             -POST Create(on error): to redisplay the form with the same dropdowns if validation fails.
         /// </summary>
-
 
         private BookFormViewModel PopulateViewModel(BookFormViewModel? model = null)
         {

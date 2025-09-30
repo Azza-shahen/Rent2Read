@@ -1,4 +1,5 @@
-﻿using Hangfire;
+﻿using FluentValidation.AspNetCore;
+using Hangfire;
 using HashidsNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -6,8 +7,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Rent2Read.Web.Core.Mapping;
 using Rent2Read.Web.Helpers;
+using Rent2Read.Web.Validators;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
+using ViewToHTML.Extensions;
 
 namespace Rent2Read.Web
 {
@@ -105,6 +108,17 @@ namespace Rent2Read.Web
             services.AddAutoMapper(Assembly.GetAssembly(typeof(MappingProfile)));
             //Scans the entire assembly for all classes inheriting from Profile. Broader and safer.
 
+            services.AddViewToHTML();
+         
+            services.AddFluentValidationAutoValidation();
+            // Enable automatic server-side validation for models using FluentValidation instead of only DataAnnotations
+
+            services.AddFluentValidationClientsideAdapters();
+            // Enables FluentValidation integration with client-side(browser) validation (like jQuery Unobtrusive Validation)
+
+
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            // Automatically scans the current assembly and register all classes classes that implement IValidator<T>
 
             services.AddMvc(options
                 // Add a global filter will automatically check for Anti-Forgery tokens on unsafe HTTP methods (POST, PUT, DELETE).protect the app from CSRF attacks.

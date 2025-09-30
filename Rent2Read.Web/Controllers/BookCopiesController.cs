@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BookCopiesController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
+    public class BookCopiesController(IApplicationDbContext _dbContext
+                                       , IMapper _mapper
+                                       , IValidator<BookCopyFormViewModel> _validator) : Controller
     {
 
         #region Create
@@ -29,7 +32,8 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult Create(BookCopyFormViewModel model)
         {
-            if (!ModelState.IsValid)
+            var validationResult = _validator.Validate(model);
+                if (!validationResult.IsValid)
                 return BadRequest();
 
             var book = _dbContext.Books.Find(model.BookId);

@@ -14,4 +14,5 @@ global using Rent2Read.Web.Filters;
 global using Rent2Read.Web.Services;
 global using System.ComponentModel.DataAnnotations;
 global using System.Security.Claims;
+global using FluentValidation;
 

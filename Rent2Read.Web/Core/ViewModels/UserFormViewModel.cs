@@ -7,29 +7,22 @@ namespace Rent2Read.Web.Core.ViewModels
     {
         public string? Id { get; set; }
 
-        [MaxLength(length: 100, ErrorMessage = Errors.MaxLength), Display(Name = "Full Name")
-             , RegularExpression(RegexPatterns.CharactersOnly_Eng, ErrorMessage = Errors.OnlyEnglishLetters)]
+        [Display(Name = "Full Name")]
         public string FullName { get; set; } = null!;
 
 
-        [MaxLength(length: 20, ErrorMessage = Errors.MaxLength), Display(Name = "Username")]
+        [Display(Name = "Username")]
         [Remote("AllowUserName", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
-        [RegularExpression(RegexPatterns.Username, ErrorMessage = Errors.InvalidUsername)]
         public string UserName { get; set; } = null!;
 
-
-        [MaxLength(length: 200, ErrorMessage = Errors.MaxLength), EmailAddress]
         [Remote("AllowEmail", null!, AdditionalFields = "Id", ErrorMessage = Errors.Duplicated)]
         public string Email { get; set; } = null!;
 
-        [DataType(DataType.Password),
-                StringLength(100, ErrorMessage = Errors.MaxMinLength, MinimumLength = 8),
-                RegularExpression(RegexPatterns.Password, ErrorMessage = Errors.WeakPassword)]
+        [DataType(DataType.Password)]
         [RequiredIf("Id == null", ErrorMessage = Errors.RequiredField)]
         public string? Password { get; set; } = null!;
 
-        [DataType(DataType.Password), Display(Name = "Confirm password"),
-            Compare("Password", ErrorMessage = Errors.ConfirmPasswordNotMatch)]
+        [DataType(DataType.Password), Display(Name = "Confirm password")]
         [RequiredIf("Id == null", ErrorMessage = Errors.RequiredField)]
         public string? ConfirmPassword { get; set; } = null!;
 

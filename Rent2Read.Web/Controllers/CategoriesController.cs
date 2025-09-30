@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class CategoriesController(IApplicationDbContext _dbContext, IMapper _mapper) : Controller
+    public class CategoriesController(IApplicationDbContext _dbContext
+                                           , IMapper _mapper
+                                           , IValidator<CategoryFormViewModel> _validator) : Controller
     {
 
         #region Index
@@ -50,7 +52,8 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult Create(CategoryFormViewModel model)
         {
-            if (ModelState.IsValid)//Server Side Validation
+            var validationResult = _validator.Validate(model);
+            if (validationResult.IsValid)//Server Side Validation
             {
                 var category = _mapper.Map<Category>(model);
                 category.CreatedById = User.GetUserId();
@@ -85,7 +88,8 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult Edit(CategoryFormViewModel model)
         {
-            if (ModelState.IsValid)
+            var validationResult = _validator.Validate(model);
+            if (validationResult.IsValid)
             {
 
                 var category = _dbContext.Categories.Find(model.Id);

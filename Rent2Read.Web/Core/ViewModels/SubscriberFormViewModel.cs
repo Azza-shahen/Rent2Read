@@ -8,31 +8,27 @@ namespace Rent2Read.Web.Core.ViewModels
 
         public string? Key { get; set; }
 
-        [MaxLength(100), Display(Name = "First Name"),
-            RegularExpression(RegexPatterns.DenySpecialCharacters, ErrorMessage = Errors.DenySpecialCharacters)]
+        [ Display(Name = "First Name"),
+           /* RegularExpression(RegexPatterns.DenySpecialCharacters, ErrorMessage = Errors.DenySpecialCharacters)*/]
         public string FirstName { get; set; } = null!;
 
-        [MaxLength(100), Display(Name = "Last Name"),
-            RegularExpression(RegexPatterns.DenySpecialCharacters, ErrorMessage = Errors.DenySpecialCharacters)]
+        [Display(Name = "Last Name"),
+         /*   RegularExpression(RegexPatterns.DenySpecialCharacters, ErrorMessage = Errors.DenySpecialCharacters)*/]
         public string LastName { get; set; } = null!;
 
         [Display(Name = "Date Of Birth")]
         [AssertThat("DateOfBirth <= Today()", ErrorMessage = Errors.NotAllowFutureDates)]
         public DateTime DateOfBirth { get; set; } = DateTime.Now;
 
-        [MaxLength(14), Display(Name = "National ID"),
-            RegularExpression(RegexPatterns.NationalId, ErrorMessage = Errors.InvalidNationalId)]
+        [ Display(Name = "National ID"),]
         [Remote("AllowNationalId", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string NationalId { get; set; } = null!;
 
-        [MaxLength(11), Display(Name = "Mobile Number"),
-            RegularExpression(RegexPatterns.MobileNumber, ErrorMessage = Errors.InvalidMobileNumber)]
+        [ Display(Name = "Mobile Number")]
         [Remote("AllowMobileNumber", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string MobileNumber { get; set; } = null!;
-
         public bool HasWhatsApp { get; set; }
 
-        [MaxLength(150), EmailAddress]
         [Remote("AllowEmail", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string Email { get; set; } = null!;
 
@@ -48,8 +44,6 @@ namespace Rent2Read.Web.Core.ViewModels
         public int GovernorateId { get; set; }
 
         public IEnumerable<SelectListItem>? Governorates { get; set; }
-
-        [MaxLength(500)]
         public string Address { get; set; } = null!;
 
         public string? ImageUrl { get; set; }
