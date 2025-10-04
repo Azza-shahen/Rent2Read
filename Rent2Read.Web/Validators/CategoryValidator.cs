@@ -1,6 +1,6 @@
 ﻿namespace Rent2Read.Web.Validators
 {
-    public class CategoryValidator:AbstractValidator<CategoryFormViewModel>
+    public class CategoryValidator : AbstractValidator<CategoryFormViewModel>
     {
         public CategoryValidator()
         {

@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class CategoriesController(IApplicationDbContext _dbContext
-                                           , IMapper _mapper
+    public class CategoriesController(     IMapper _mapper
+                                           , ICategoryService _categoryService
                                            , IValidator<CategoryFormViewModel> _validator) : Controller
     {
 
@@ -29,7 +29,7 @@ namespace Rent2Read.Web.Controllers
     */
             #endregion
             //AsNoTracking=> used with Read-only query(updates are not needed,modifications won’t be saved.)
-            var categories = _dbContext.Categories.AsNoTracking().ToList();
+            var categories = _categoryService.GetAll();
             var categoryVM = _mapper.Map<IEnumerable<CategoryViewModel>>(categories);
             return View(categoryVM);
         }
@@ -53,29 +53,21 @@ namespace Rent2Read.Web.Controllers
         public IActionResult Create(CategoryFormViewModel model)
         {
             var validationResult = _validator.Validate(model);
-            if (validationResult.IsValid)//Server Side Validation
-            {
-                var category = _mapper.Map<Category>(model);
-                category.CreatedById = User.GetUserId();
 
-                _dbContext.Categories.Add(category);
-                _dbContext.SaveChanges();
+            if (!validationResult.IsValid)
+                return BadRequest();
 
+            var category = _categoryService.Add(model.Name, User.GetUserId());
 
-                var categoryVM = _mapper.Map<CategoryViewModel>(category);
-
-                return PartialView("_CategoryRow", categoryVM);
-            }
-            return BadRequest();
+            return PartialView("_CategoryRow", _mapper.Map<CategoryViewModel>(category));
         }
-
         #endregion
         #region Edit
         [HttpGet]
         [AjaxOnly]
         public IActionResult Edit(int id)
         {
-            var category = _dbContext.Categories.Find(id);
+            var category = _categoryService.GetById(id);
             if (category is null)
             {
                 return NotFound();
@@ -92,16 +84,7 @@ namespace Rent2Read.Web.Controllers
             if (validationResult.IsValid)
             {
 
-                var category = _dbContext.Categories.Find(model.Id);
-                if (category is null)
-                {
-                    return NotFound();
-                }
-                //category.Name = model.Name;
-                category = _mapper.Map(model, category);
-                category.LastUpdatedById = User.GetUserId();
-                category.LastUpdatedOn = DateTime.Now;
-                _dbContext.SaveChanges();
+                var category = _categoryService.Update(model.Id,model.Name, User.GetUserId());
 
 
                 var categoryVM = _mapper.Map<CategoryViewModel>(category);
@@ -113,31 +96,13 @@ namespace Rent2Read.Web.Controllers
 
         #endregion
         #region ToggleStatus
-
-
         public IActionResult ToggleStatus(int id)
         {
+            var category = _categoryService.ToggleStatus(id, User.GetUserId());
 
-            var category = _dbContext.Categories.Find(id);
-            if (category is null)
-            {
+           if(category is null)
                 return NotFound();
-            }
 
-            /*    if (category.IsDeleted)
-                {
-                    category.IsDeleted = false;
-                }
-                else
-                {
-                    category.IsDeleted = true;
-                }
-            */
-
-            category.IsDeleted = !category.IsDeleted;
-            category.LastUpdatedById = User.GetUserId();
-            category.LastUpdatedOn = DateTime.Now;
-            _dbContext.SaveChanges();
             return Ok(category.LastUpdatedOn.ToString());
             /*  
              *  We use the value returned by the action (LastUpdatedOn) to update
@@ -155,8 +120,7 @@ namespace Rent2Read.Web.Controllers
         public IActionResult AllowItem(CategoryFormViewModel model)
         {
 
-            var category = _dbContext.Categories.FirstOrDefault(c => c.Name == model.Name);
-            var isAllowed = category is null || category.Id.Equals(model.Id);
+            var isAllowed = _categoryService.AllowCategory(model.Id, model.Name);
 
             return Json(isAllowed);
         }

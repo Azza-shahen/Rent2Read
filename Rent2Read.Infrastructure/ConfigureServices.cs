@@ -24,6 +24,7 @@ namespace Rent2Read.Infrastructure
 
 
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             return services;
         }

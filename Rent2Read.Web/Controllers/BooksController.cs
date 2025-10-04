@@ -1,18 +1,21 @@
 ﻿using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
+using Rent2Read.Domain.Dtos;
 using SixLabors.ImageSharp;
-using System.Linq.Dynamic.Core;
+
 
 
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BooksController(IApplicationDbContext _dbContext, IMapper _mapper
+    public class BooksController(    IBookService _bookService
+                                          , IAuthorService _authorService
+                                          , ICategoryService _categoryService
+                                          , IMapper _mapper
                                         /* , IWebHostEnvironment _webHostEnvironment*/
                                         , IImageService _imageService
-                                        ,IValidator<BookFormViewModel> _validator
+                                        , IValidator<BookFormViewModel> _validator
                                        /* , IOptions<CloudinarySettings> cloudinary*/) : Controller
     { /* IWebHostEnvironment => - to know the location of wwwroot and store images there.
                                 -Checking environment(IsDevelopment)
@@ -47,35 +50,24 @@ namespace Rent2Read.Web.Controllers
         // This helps in handling large datasets efficiently by loading only the required rows.
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public IActionResult GetBooks(int start, int length)
+        public IActionResult GetBooks()
         {
-           // var skip = int.Parse(Request.Form["start"]!);
-            //int pageSize = int.Parse(Request.Form["length"]!);
-            // start = the row you start from.
-            //length=>The number of classes you take.
-            var searchValue = Request.Form["search[value]"];
+            var form = Request.Form;
+            var skip = int.Parse(form["start"]!);
+            int pageSize = int.Parse(form["length"]!);
+            var searchValue = form["search[value]"];
 
-            var sortColumnIndex = Request.Form["order[0][column]"];
+            var sortColumnIndex = form["order[0][column]"];
 
-            var sortColumn = Request.Form[$"columns[{sortColumnIndex}][name]"];
-            var sortColumnDirection = Request.Form["order[0][dir]"]; // asc or desc
+            var sortColumn = form[$"columns[{sortColumnIndex}][name]"];
+            var sortColumnDirection = form["order[0][dir]"]; // asc or desc
 
-            IQueryable<Book> books = _dbContext.Books
-                .Include(b => b.Author)
-                .Include(b => b.Categories)
-                .ThenInclude(c => c.Category);
+            var filterDto = new FilterationDto(skip, pageSize, searchValue!, sortColumnIndex!, sortColumn!, sortColumnDirection!);
 
-            if (!string.IsNullOrEmpty(searchValue))
-            {
-                books = books.Where(b => b.Title.Contains(searchValue!) || b.Author!.Name.Contains(searchValue!));
-            }
-            // Apply dynamic sorting based on column name and sort direction=>You should use a library like System.Linq.Dynamic.Core
-            // not OrderBy from LINQ, because it doesn't understand string as an expression.(b=>b.Title)
-            books = books.OrderBy($"{sortColumn} {sortColumnDirection}");
+            var (books, recordsTotal) = _bookService.GetFiltered(filterDto);
 
-            var data = books.Skip(start).Take(length).ToList();// Returns the required part of the data Only.
-            var mappedDate = _mapper.Map<IEnumerable<BookViewModel>>(data);
-            var recordsTotal = books.Count(); // Total number of books
+            var mappedDate = _mapper.Map<IEnumerable<BookViewModel>>(books);
+
             var jsonData = new
             {
                 recordsFiltered = recordsTotal,
@@ -91,16 +83,15 @@ namespace Rent2Read.Web.Controllers
         #region Details
         public IActionResult Details(int id)
         {
-            var book = _dbContext.Books
-                .Include(b => b.Author)
-                .Include(b => b.Copies)
-                .Include(b => b.Categories)
-                .ThenInclude(c => c.Category)
-                .SingleOrDefault(b => b.Id == id);
+        
+            var query = _bookService.GetDetails();
+            // ProjectTo executes mapping at the SQL level (not in memory)
+            var bookVM = _mapper.ProjectTo<BookViewModel>(query)
+                         .SingleOrDefault(b => b.Id == id);
 
-            if (book is null)
+            if (bookVM is null)
                 return NotFound();
-            var bookVM = _mapper.Map<BookViewModel>(book);
+
             return View(bookVM);
         }
         #endregion
@@ -155,18 +146,10 @@ namespace Rent2Read.Web.Controllers
                        book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl);
                        book.ImagePublicId = result.PublicId;*/
                 }
-                book.CreatedById = User.GetUserId();
+          
 
-                foreach (var category in model.SelectedCategories)
-                {
-                    /* SelectedCategories contains the IDs of all chosen categories.
-                     I loop over them to add each one to the book's Categories collection.
-                     This ensures the many-to - many relationship is saved properly in the join table.*/
+                book = _bookService.Add(book, model.SelectedCategories, User.GetUserId());
 
-                    book.Categories.Add(new BookCategory { CategoryId = category });
-                }
-                _dbContext.Books.Add(book);
-                _dbContext.SaveChanges();
                 return RedirectToAction(nameof(Details), new { id = book.Id });
 
             }
@@ -176,8 +159,8 @@ namespace Rent2Read.Web.Controllers
         #region Edit
         [HttpGet]
         public IActionResult Edit(int id)
-        {
-            var book = _dbContext.Books.Include(b => b.Categories).FirstOrDefault(b => b.Id == id);
+        { 
+            var book = _bookService.GetWithCategories(id);
             if (book == null)
             {
                 return NotFound();
@@ -185,6 +168,7 @@ namespace Rent2Read.Web.Controllers
             var model = _mapper.Map<BookFormViewModel>(book);
             var viewModel = PopulateViewModel(model);
             viewModel.SelectedCategories = book.Categories.Select(c => c.CategoryId).ToList();
+
             return View("Form", viewModel);
         }
 
@@ -198,10 +182,7 @@ namespace Rent2Read.Web.Controllers
             if (ModelState.IsValid)
             {
 
-                var book = _dbContext.Books
-                    .Include(navigationPropertyPath: b => b.Categories)
-                    .Include(b => b.Copies)
-                    .FirstOrDefault(b => b.Id == model.Id);
+                var book = _bookService.GetWithCategories(model.Id);
                 if (book == null)
                 {
                     return NotFound();
@@ -252,41 +233,12 @@ namespace Rent2Read.Web.Controllers
 
 
                 book = _mapper.Map(model, book);
-                book.LastUpdatedById = User.GetUserId();
-                book.LastUpdatedOn = DateTime.Now;
+
 
                 /* book.ImageThumbnailUrl = GetThumbnailUrl(book.ImageUrl!);*/
                 /*  book.ImagePublicId = imagePublicid;*/
 
-                foreach (var category in model.SelectedCategories)
-                { /* SelectedCategories contains the IDs of all chosen categories.
-                  I loop over them to add each one to the book's Categories collection.
-                  This ensures the many-to-many relationship is saved properly in the join table.
-                  */
-                    book.Categories.Add(new BookCategory { CategoryId = category });
-                }
-                // This works in-memory: it requires the copies to be already loaded from the database.
-                // Changes will only be saved to the database
-                // after calling _context.SaveChanges().
-
-                /*    if (!book.IsAvailableForRental)
-                    {
-                        foreach (var copy in book.Copies)
-                            copy.IsAvailableForRental = false;
-
-                    }*/
-                /*    if (!book.IsAvailableForRental)
-                    {
-                        book.Copies.ToList().ForEach(copy => copy.IsAvailableForRental = false);
-                    }*/
-                _dbContext.SaveChanges();
-
-                // This does not require loading the copies into memory. It performs a single SQL UPDATE statement
-                //which is faster and more efficient for large datasets.
-
-                if (!model.IsAvailableForRental)
-                    _dbContext.BookCopies.Where(c => c.BookId == book.Id)
-                       .ExecuteUpdate(p => p.SetProperty(c => c.IsAvailableForRental, false));
+            book = _bookService.Update(book, model.SelectedCategories, User.GetUserId());
 
                 return RedirectToAction(nameof(Details), new { id = book.Id });
 
@@ -299,29 +251,17 @@ namespace Rent2Read.Web.Controllers
         [HttpPost]
         public IActionResult ToggleStatus(int id)
         {
+            var book = _bookService.ToggleStatus(id, User.GetUserId());
 
-            var book = _dbContext.Books.Find(id);
-            if (book is null)
-            {
-                return NotFound();
-            }
-
-
-            book.IsDeleted = !book.IsDeleted;
-            book.LastUpdatedById = User.GetUserId();
-            book.LastUpdatedOn = DateTime.Now;
-            _dbContext.SaveChanges();
-            return Ok();
-
+            return book is null ? NotFound() : Ok();
         }
 
         #endregion
         #region AllowItem
         public IActionResult AllowItem(BookFormViewModel model)
         {
-            var book = _dbContext.Books.FirstOrDefault(b => b.Title == model.Title && b.AuthorId == model.AuthorId);
-            var IsAllowed = book is null || book.Id.Equals(model.Id);
-
+            var IsAllowed = _bookService.AllowTitle(model.Id, model.Title, model.AuthorId);
+           
             return Json(IsAllowed);
         }
         #endregion
@@ -338,8 +278,8 @@ namespace Rent2Read.Web.Controllers
         private BookFormViewModel PopulateViewModel(BookFormViewModel? model = null)
         {
             BookFormViewModel viewModel = model is null ? new BookFormViewModel() : model;
-            var authors = _dbContext.Authors.Where(a => !a.IsDeleted).OrderBy(a => a.Name).ToList();
-            var categories = _dbContext.Categories.Where(a => !a.IsDeleted).OrderBy(a => a.Name).ToList();
+            var authors = _authorService.GetActiveAuthors();
+            var categories = _categoryService.GetActiveCategories();
 
             viewModel.Authors = _mapper.Map<IEnumerable<SelectListItem>>(authors);
             viewModel.Categories = _mapper.Map<IEnumerable<SelectListItem>>(categories);

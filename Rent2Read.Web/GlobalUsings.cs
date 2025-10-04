@@ -1,8 +1,10 @@
 ﻿global using AutoMapper;
+global using FluentValidation;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Rent2Read.Application.Common.Interfaces;
 global using Rent2Read.Application.Common.Models;
+global using Rent2Read.Application.Services;
 global using Rent2Read.Domain.Common;
 global using Rent2Read.Domain.Consts;
 global using Rent2Read.Domain.Entities;
@@ -14,5 +16,4 @@ global using Rent2Read.Web.Filters;
 global using Rent2Read.Web.Services;
 global using System.ComponentModel.DataAnnotations;
 global using System.Security.Claims;
-global using FluentValidation;
 

@@ -3,7 +3,7 @@
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class AuthorsController(IApplicationDbContext _dbContext
+    public class AuthorsController( IAuthorService _authorService
                                     , IMapper _mapper
                                     , IValidator<AuthorFormViewModel> _validator) : Controller
     {
@@ -11,7 +11,7 @@ namespace Rent2Read.Web.Controllers
 
         public IActionResult Index()
         {
-            var authors = _dbContext.Authors.AsNoTracking().ToList();
+            var authors = _authorService.GetAll();
             var authorVM = _mapper.Map<IEnumerable<AuthorViewModel>>(authors);
             return View(authorVM);
         }
@@ -31,10 +31,8 @@ namespace Rent2Read.Web.Controllers
             var validationResult = _validator.Validate(model);
             if (validationResult.IsValid)
             {
-                var author = _mapper.Map<Author>(model);
-                author.CreatedById = User.GetUserId();
-                _dbContext.Authors.Add(author);
-                _dbContext.SaveChanges();
+                var author = _authorService.Add(model.Name, User.GetUserId());
+
                 var authorVM = _mapper.Map<AuthorViewModel>(author);
 
                 return PartialView("_AuthorRow", authorVM);
@@ -43,13 +41,12 @@ namespace Rent2Read.Web.Controllers
         }
 
         #endregion
-
         #region Edit
         [HttpGet]
         [AjaxOnly]
         public IActionResult Edit(int id)
         {
-            var author = _dbContext.Authors.Find(id);
+            var author = _authorService.GetById(id);
             var authorVM = _mapper.Map<AuthorFormViewModel>(author);
             return PartialView("_Form", authorVM);
         }
@@ -61,15 +58,12 @@ namespace Rent2Read.Web.Controllers
             var validationResult = _validator.Validate(model);
             if (validationResult.IsValid)
             {
-                var author = _dbContext.Authors.Find(model.Id);
+                var author = _authorService.Update(model.Id, model.Name, User.GetUserId());
+
                 if (author is null)
                 {
                     return NotFound();
                 }
-                var name = _mapper.Map(model, author);
-                author.LastUpdatedById = User.GetUserId();
-                author.LastUpdatedOn = DateTime.Now;
-                _dbContext.SaveChanges();
 
                 var authorVM = _mapper.Map<AuthorViewModel>(author);
 
@@ -78,33 +72,26 @@ namespace Rent2Read.Web.Controllers
             return BadRequest();
         }
         #endregion
-
         #region ToggleStatus
         public IActionResult ToggleStatus(int id)
         {
 
-            var author = _dbContext.Authors.Find(id);
+            var author = _authorService.ToggleStatus(id, User.GetUserId());
             if (author is null)
             {
                 return NotFound();
             }
 
-            author.IsDeleted = !author.IsDeleted;
-            author.LastUpdatedById = User.GetUserId();
-
-            author.LastUpdatedOn = DateTime.Now;
-            _dbContext.SaveChanges();
             return Ok(author.LastUpdatedOn.ToString());
 
 
         }
         #endregion
-
         #region AllowItem
         public IActionResult AllowItem(AuthorFormViewModel model)
         {
-            var author = _dbContext.Authors.FirstOrDefault(a => a.Name == model.Name);
-            var IsAllowed = author is null || author.Id.Equals(model.Id);
+
+            var IsAllowed = _authorService.AllowAuthor(model.Id, model.Name);
 
             return Json(IsAllowed);
         }

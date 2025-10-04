@@ -14,7 +14,7 @@ namespace Rent2Read.Web.Controllers
                                  , IEmailSender _emailSender
                                  , IEmailBody _emailBody
                                  , IMapper _mapper
-                                 ,IValidator<UserFormViewModel> _validator) : Controller
+                                 , IValidator<UserFormViewModel> _validator) : Controller
     {
         #region Index
         public async Task<IActionResult> Index()

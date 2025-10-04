@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Rent2Read.Domain.Dtos;
 
 namespace Rent2Read.Web.Core.Mapping
 {
@@ -31,6 +32,7 @@ namespace Rent2Read.Web.Core.Mapping
                  .ForMember(dest => dest.Author, opt => opt.MapFrom(src => src.Author!.Name))
                  .ForMember(dest => dest.Categories, opt => opt.MapFrom(src => src.Categories.Select(c => c.Category!.Name).ToList()));
 
+            CreateMap<BookDto, BookViewModel>();
             CreateMap<BookCopy, BookCopyViewModel>()
                  .ForMember(dest => dest.BookTitle, opt => opt.MapFrom(src => src.Book!.Title))
                  .ForMember(dest => dest.BookId, opt => opt.MapFrom(src => src.Book!.Id))
@@ -45,7 +47,7 @@ namespace Rent2Read.Web.Core.Mapping
                 .ForMember(dest => dest.NormalizedEmail, opt => opt.MapFrom(src => src.Email.ToUpper()))
                 .ForMember(dest => dest.NormalizedUserName, opt => opt.MapFrom(src => src.UserName.ToUpper()))
                 .ReverseMap();
-
+      
             //Subscribers
             CreateMap<Subscriber, SubscriberFormViewModel>().ReverseMap();
 
@@ -74,6 +76,8 @@ namespace Rent2Read.Web.Core.Mapping
             CreateMap<RentalCopy, CopyHistoryViewModel>()
                .ForMember(dest => dest.SubscriberMobile, opt => opt.MapFrom(src => src.Rental!.Subscriber!.MobileNumber))
                .ForMember(dest => dest.SubscriberName, opt => opt.MapFrom(src => $"{src.Rental!.Subscriber!.FirstName} {src.Rental!.Subscriber!.LastName}"));
+
+            CreateMap<ReturnCopyViewModel, ReturnCopyDto>();
         }
     }
 }

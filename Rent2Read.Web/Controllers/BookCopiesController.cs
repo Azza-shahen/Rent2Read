@@ -1,11 +1,12 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 
 
 namespace Rent2Read.Web.Controllers
 {
     [Authorize(Roles = AppRoles.Archive)]
-    public class BookCopiesController(IApplicationDbContext _dbContext
+    public class BookCopiesController(IBookCopyService _bookCopyService
+                                       , IBookService _bookService
+                                       , IRentalService _rentalService
                                        , IMapper _mapper
                                        , IValidator<BookCopyFormViewModel> _validator) : Controller
     {
@@ -14,7 +15,7 @@ namespace Rent2Read.Web.Controllers
         [AjaxOnly]
         public IActionResult Create(int bookId)
         {
-            var book = _dbContext.Books.Find(bookId);
+            var book = _bookService.GetById(bookId);
 
             if (book is null)
                 return NotFound();
@@ -33,25 +34,12 @@ namespace Rent2Read.Web.Controllers
         public IActionResult Create(BookCopyFormViewModel model)
         {
             var validationResult = _validator.Validate(model);
-                if (!validationResult.IsValid)
+            if (!validationResult.IsValid)
                 return BadRequest();
+            var copy = _bookCopyService.Add(model.BookId, model.EditionNumber, model.IsAvailableForRental, User.GetUserId());
 
-            var book = _dbContext.Books.Find(model.BookId);
-
-            if (book is null)
+            if (copy is null)
                 return NotFound();
-
-            BookCopy copy = new()
-            {
-                EditionNumber = model.EditionNumber,
-                IsAvailableForRental = book.IsAvailableForRental && model.IsAvailableForRental,
-                CreatedById = User.FindFirst(ClaimTypes.NameIdentifier)!.Value
-
-            };
-
-            book.Copies.Add(copy);
-            _dbContext.SaveChanges();
-
 
             var viewModel = _mapper.Map<BookCopyViewModel>(copy);
 
@@ -62,25 +50,20 @@ namespace Rent2Read.Web.Controllers
         #region RentalHistory
         public IActionResult RentalHistory(int id)
         {
-            var copyHistory = _dbContext.RentalCopies
-                .Include(c => c.Rental)
-                .ThenInclude(r => r!.Subscriber)
-                .Where(c => c.BookCopyId == id)
-                .OrderByDescending(c => c.RentalDate)
-                .ToList();
+            var copyHistory = _rentalService.GetAllByCopyId(id);
 
             var viewModel = _mapper.Map<IEnumerable<CopyHistoryViewModel>>(copyHistory);
 
             return View(viewModel);
         }
         #endregion
-
         #region Edit
         [HttpGet]
         [AjaxOnly]
         public IActionResult Edit(int id)
         {
-            var copy = _dbContext.BookCopies.Include(c => c.Book).SingleOrDefault(c => c.Id == id);
+            var copy = _bookCopyService.GetDetails(id);
+            //var copy = _dbContext.BookCopies.Include(c => c.Book).SingleOrDefault(c => c.Id == id);
 
             if (copy is null)
                 return NotFound();
@@ -98,18 +81,10 @@ namespace Rent2Read.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var copy = _dbContext.BookCopies.Include(c => c.Book).SingleOrDefault(c => c.Id == model.Id);
+            var copy = _bookCopyService.Update(model.Id, model.EditionNumber, model.IsAvailableForRental, User.GetUserId());
 
             if (copy is null)
                 return NotFound();
-
-            copy.EditionNumber = model.EditionNumber;
-            copy.IsAvailableForRental = copy.Book!.IsAvailableForRental && model.IsAvailableForRental;
-            copy.LastUpdatedById = User.GetUserId();
-
-            copy.LastUpdatedOn = DateTime.Now;
-
-            _dbContext.SaveChanges();
 
             var viewModel = _mapper.Map<BookCopyViewModel>(copy);
 
@@ -124,18 +99,14 @@ namespace Rent2Read.Web.Controllers
         public IActionResult ToggleStatus(int id)
         {
 
-            var copy = _dbContext.BookCopies.Find(id);
+            var copy = _bookCopyService.ToggleStatus(id, User.GetUserId());
+
+            // return copy is null ? NotFound() : Ok();
             if (copy is null)
             {
                 return NotFound();
             }
 
-
-            copy.IsDeleted = !copy.IsDeleted;
-            copy.LastUpdatedById = User.GetUserId();
-
-            copy.LastUpdatedOn = DateTime.Now;
-            _dbContext.SaveChanges();
             return Ok();
 
         }

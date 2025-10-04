@@ -1,6 +1,6 @@
 ﻿namespace Rent2Read.Web.Validators
 {
-    public class BookValidator:AbstractValidator<BookFormViewModel>
+    public class BookValidator : AbstractValidator<BookFormViewModel>
     {
         public BookValidator()
         {

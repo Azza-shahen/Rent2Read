@@ -8,7 +8,7 @@ namespace Rent2Read.Web.Core.ViewModels
 
         public string? Key { get; set; }
 
-        [ Display(Name = "First Name"),
+        [Display(Name = "First Name"),
            /* RegularExpression(RegexPatterns.DenySpecialCharacters, ErrorMessage = Errors.DenySpecialCharacters)*/]
         public string FirstName { get; set; } = null!;
 
@@ -20,11 +20,11 @@ namespace Rent2Read.Web.Core.ViewModels
         [AssertThat("DateOfBirth <= Today()", ErrorMessage = Errors.NotAllowFutureDates)]
         public DateTime DateOfBirth { get; set; } = DateTime.Now;
 
-        [ Display(Name = "National ID"),]
+        [Display(Name = "National ID"),]
         [Remote("AllowNationalId", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string NationalId { get; set; } = null!;
 
-        [ Display(Name = "Mobile Number")]
+        [Display(Name = "Mobile Number")]
         [Remote("AllowMobileNumber", null!, AdditionalFields = "Key", ErrorMessage = Errors.Duplicated)]
         public string MobileNumber { get; set; } = null!;
         public bool HasWhatsApp { get; set; }

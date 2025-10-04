@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Rent2Read.Domain.Entities;
 
 namespace Rent2Read.Application.Common.Interfaces;
 

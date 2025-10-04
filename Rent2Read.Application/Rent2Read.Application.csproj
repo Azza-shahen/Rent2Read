@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.8" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Rent2Read.Domain\Rent2Read.Domain.csproj" />
   </ItemGroup>
 

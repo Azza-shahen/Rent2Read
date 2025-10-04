@@ -2,6 +2,7 @@ using Hangfire;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Rent2Read.Application;
 using Rent2Read.Infrastructure;
 using Rent2Read.Web;
 using Rent2Read.Web.BackgroundTasks;
@@ -15,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApplicationServices();
 builder.Services.AddWebServices(builder);
 
 

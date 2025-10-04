@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Rent2Read.Web.Core.Mapping;
 using Rent2Read.Web.Helpers;
-using Rent2Read.Web.Validators;
 using System.Reflection;
 using UoN.ExpressiveAnnotations.NetCore.DependencyInjection;
 using ViewToHTML.Extensions;
@@ -109,7 +108,7 @@ namespace Rent2Read.Web
             //Scans the entire assembly for all classes inheriting from Profile. Broader and safer.
 
             services.AddViewToHTML();
-         
+
             services.AddFluentValidationAutoValidation();
             // Enable automatic server-side validation for models using FluentValidation instead of only DataAnnotations
 
